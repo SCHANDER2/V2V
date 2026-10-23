@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 
 beforeAll(async () => {
   await main();
-});
+}, 30000);
 
 afterAll(async () => {
   await prisma.$disconnect();

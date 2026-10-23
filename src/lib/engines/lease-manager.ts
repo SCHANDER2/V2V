@@ -92,11 +92,15 @@ export async function evictExpiredLeases(): Promise<EvictionResult> {
 
   for (const lease of expiredLeases) {
     await prisma.$transaction(async (tx) => {
-      // Mark as evicted
-      await tx.donorLease.update({
-        where: { id: lease.id },
+      // Mark as evicted atomically
+      const updateResult = await tx.donorLease.updateMany({
+        where: { 
+          id: lease.id, 
+          status: { in: [LeaseStatus.JIT_PASSED, LeaseStatus.EN_ROUTE] } 
+        },
         data: { status: LeaseStatus.EVICTED_TIMEOUT },
       });
+      if (updateResult.count === 0) return;
       evictedLeaseIds.push(lease.id);
 
       // Find earliest standby lease for same request
