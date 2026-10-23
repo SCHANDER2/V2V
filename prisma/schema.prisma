@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Donor {
+  id             Int          @id @default(autoincrement())
+  name           String
+  phoneNumber    String       @unique
+  latitude       Float
+  longitude      Float
+  bloodGroup     String
+  gender         String
+  weightKg       Float        @default(70)
+  lastWholeBlood DateTime?
+  lastPlatelet   DateTime?
+  lastPRBC       DateTime?
+  lastPingedAt   DateTime?
+  snoozeUntil    DateTime?
+  trustScore     Float        @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  leases         DonorLease[]
+}
+
+model EmergencyRequest {
+  id           Int          @id @default(autoincrement())
+  patientName  String
+  patientUhid  String
+  hospitalName String
+  hospitalLat  Float
+  hospitalLng  Float
+  component    String
+  bloodGroup   String       @default("O_POS")
+  requestMode  String
+  unitsNeeded  Int
+  waveState    String       @default("PENDING_VERIFICATION")
+  shortHash    String       @unique
+  expiresAt    DateTime
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  leases       DonorLease[]
+}
+
+model DonorLease {
+  id             Int              @id @default(autoincrement())
+  request        EmergencyRequest @relation(fields: [requestId], references: [id])
+  requestId      Int
+  donor          Donor            @relation(fields: [donorId], references: [id])
+  donorId        Int
+  status         String           @default("PINGED")
+  leaseExpiresAt DateTime
+  handshakePin   String?
+  createdAt      DateTime         @default(now())
+}
+
+model ReferralLedger {
+  id         Int       @id @default(autoincrement())
+  referrerId Int
+  refereeId  Int
+  status     String    @default("PENDING")
+  unlockedAt DateTime?
+  createdAt  DateTime  @default(now())
+}

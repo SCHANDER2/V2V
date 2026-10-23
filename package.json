@@ -1,0 +1,41 @@
+{
+  "name": "v2v-emergency-dispatch",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "clean": "rimraf .next",
+    "prebuild": "rimraf .next",
+    "postinstall": "prisma generate",
+    "build": "prisma generate && prisma db push --accept-data-loss && tsx prisma/seed.ts && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "next": "14.x",
+    "react": "18.x",
+    "react-dom": "18.x",
+    "@prisma/client": "5.x",
+    "prisma": "5.x",
+    "ioredis": "5.x",
+    "geolib": "4.x",
+    "zod": "3.x",
+    "axios": "1.x",
+    "tailwindcss": "3.x",
+    "lucide-react": "0.x",
+    "shadcn-ui": "latest",
+    "next-pwa": "^5.6.0",
+    "tsx": "4.x"
+  },
+  "devDependencies": {
+    "rimraf": "^2.7.1",
+    "typescript": "5.x",
+    "jest": "29.x",
+    "ts-jest": "29.x",
+    "@types/jest": "29.x",
+    "@testing-library/react": "14.x",
+    "@testing-library/jest-dom": "6.x",
+    "@types/node": "20.x"
+  }
+}
