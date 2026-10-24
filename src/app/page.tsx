@@ -232,18 +232,18 @@ export default function HomePage() {
               <Search className="w-4 h-4 text-rose-500" />
               <span>रक्त उपलब्धता (Stock)</span>
             </a>
-            <a href="#live-banks" className="hover:text-rose-600 flex items-center gap-1 transition">
+            <Link href="/directory" className="hover:text-rose-600 flex items-center gap-1 transition">
               <Building2 className="w-4 h-4 text-rose-500" />
               <span>रक्त बैंक (Directory)</span>
-            </a>
-            <a href="#donation-camps" className="hover:text-rose-600 flex items-center gap-1 transition">
+            </Link>
+            <Link href="/camps" className="hover:text-rose-600 flex items-center gap-1 transition">
               <Calendar className="w-4 h-4 text-rose-500" />
               <span>रक्तदान शिविर (Camps)</span>
-            </a>
-            <a href="#donor-section" className="hover:text-rose-600 flex items-center gap-1 transition">
+            </Link>
+            <Link href="/register" className="hover:text-rose-600 flex items-center gap-1 transition">
               <Heart className="w-4 h-4 text-rose-500" />
-              <span>रक्तदाता बनें (Donate)</span>
-            </a>
+              <span>रक्तदाता बनें (Register)</span>
+            </Link>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -372,8 +372,8 @@ export default function HomePage() {
           </a>
 
           {/* Card 2: Blood Bank Directory */}
-          <a
-            href="#live-banks"
+          <Link
+            href="/directory"
             className="bg-white rounded-2xl p-5 shadow-lg shadow-slate-200/80 border-t-4 border-blue-600 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between group"
           >
             <div>
@@ -394,11 +394,11 @@ export default function HomePage() {
               <span>रक्त केंद्र सूची</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
-          </a>
+          </Link>
 
           {/* Card 3: Blood Donation Camps */}
-          <a
-            href="#donation-camps"
+          <Link
+            href="/camps"
             className="bg-white rounded-2xl p-5 shadow-lg shadow-slate-200/80 border-t-4 border-emerald-600 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between group"
           >
             <div>
@@ -419,11 +419,11 @@ export default function HomePage() {
               <span>शिविर कार्यक्रम देखें</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
-          </a>
+          </Link>
 
           {/* Card 4: Donor Login / V2V Pass */}
-          <a
-            href="#donor-section"
+          <Link
+            href="/register"
             className="bg-white rounded-2xl p-5 shadow-lg shadow-slate-200/80 border-t-4 border-amber-500 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between group"
           >
             <div>
@@ -444,7 +444,7 @@ export default function HomePage() {
               <span>रक्तदाता बनें</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
-          </a>
+          </Link>
         </div>
       </section>
 
