@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import axios from "axios";
 import {
   ShieldAlert,
@@ -18,7 +19,10 @@ import {
   ChevronRight,
   RefreshCw,
   Phone,
-  Droplet
+  Droplet,
+  ArrowLeft,
+  Building2,
+  PhoneCall
 } from "lucide-react";
 
 import { BloodGroup, Component, RequestMode } from "@/types/enums";
@@ -149,54 +153,54 @@ export default function EmergencyRequestNewPage() {
     };
   }, [hospitalLat, hospitalLng, component, bloodGroup]);
 
-  // Hospital Preset Handler
+  // Hospital preset dropdown change handler
   const handleHospitalPresetChange = (presetId: string) => {
     setSelectedHospitalPreset(presetId);
     if (presetId === "custom") {
-      setLocationNotice("Custom hospital mode enabled. Enter name and exact coordinates below.");
+      setHospitalName("");
+      setHospitalLat(0);
+      setHospitalLng(0);
       return;
     }
-    const hosp = DELHI_NCR_HOSPITALS.find((h) => h.id === presetId);
-    if (hosp) {
-      setHospitalName(hosp.name);
-      setHospitalLat(hosp.lat);
-      setHospitalLng(hosp.lng);
+
+    const match = DELHI_NCR_HOSPITALS.find((h) => h.id === presetId);
+    if (match) {
+      setHospitalName(match.name);
+      setHospitalLat(match.lat);
+      setHospitalLng(match.lng);
       setLocationNotice(null);
     }
   };
 
-  // Browser GPS Geolocation Resolver
+  // Browser Geolocation Detection
   const handleDetectGPS = () => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setLocationNotice("Geolocation is not supported by your browser. Please select a preset.");
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setLocationNotice("Geolocation is not supported by your browser. Please select a hospital preset.");
       return;
     }
 
     setIsLocating(true);
-    setLocationNotice(null);
+    setLocationNotice("Detecting your current hospital coordinates via GPS...");
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = Math.round(position.coords.latitude * 10000) / 10000;
-        const lng = Math.round(position.coords.longitude * 10000) / 10000;
+      (pos) => {
+        setIsLocating(false);
+        const lat = parseFloat(pos.coords.latitude.toFixed(6));
+        const lng = parseFloat(pos.coords.longitude.toFixed(6));
         setHospitalLat(lat);
         setHospitalLng(lng);
         setSelectedHospitalPreset("custom");
-        if (!hospitalName || hospitalName.includes("AIIMS")) {
-          setHospitalName("Emergency Medical Centre (GPS Detected)");
-        }
-        setIsLocating(false);
-        setLocationNotice(`GPS Lock Acquired: ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E (Accuracy: ±${Math.round(position.coords.accuracy)}m)`);
+        setLocationNotice(`GPS Acquired: ${lat}°N, ${lng}°E (Accuracy ±${pos.coords.accuracy.toFixed(0)}m)`);
       },
-      (error) => {
+      (err) => {
         setIsLocating(false);
-        setLocationNotice(`GPS Unavailable (${error.message}). Please select your hospital from the preset list.`);
+        setLocationNotice(`GPS detection failed (${err.message}). Defaulted to AIIMS Delhi.`);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
-  // OCR Requisition Simulation Runner
+  // Live OCR Requisition Slip Simulation Handler
   const runOCRSimulation = async (
     presetType: "VALID_AIIMS_SDP" | "VALID_APOLLO_PRBC" | "MISSING_STAMP" | "BLURRY_UNREADABLE",
     fileName?: string
@@ -315,50 +319,75 @@ export default function EmergencyRequestNewPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-16 selection:bg-rose-500 selection:text-white">
+    <div
+      className="min-h-screen text-slate-900 pb-16 selection:bg-rose-500 selection:text-white"
+      style={{
+        backgroundImage: `linear-gradient(180deg, rgba(248, 250, 252, 0.94) 0%, rgba(241, 245, 249, 0.96) 100%), url('https://images.unsplash.com/photo-1536856136534-bb679c52a9aa?auto=format&fit=crop&w=1920&q=80')`,
+        backgroundAttachment: "fixed",
+        backgroundSize: "cover",
+      }}
+    >
       {/* Top Emergency Red Header */}
-      <header className="bg-rose-700 text-white shadow-lg sticky top-0 z-30">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-200 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-            </span>
-            <div>
-              <h1 className="text-base sm:text-lg font-black tracking-wide leading-none">
-                EMERGENCY SOS INTAKE
-              </h1>
-              <p className="text-[11px] text-rose-100 font-medium">
-                V2V Expanding-Ring Wave Dispatch Protocol
-              </p>
+      <header className="bg-gradient-to-r from-rose-800 via-red-800 to-rose-900 text-white shadow-md sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="p-1.5 rounded-lg bg-white/15 hover:bg-white/25 transition text-white"
+              title="Return to Home"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <div className="flex items-center gap-2.5">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-200 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+              </span>
+              <div>
+                <h1 className="text-base sm:text-lg font-black tracking-wide leading-none">
+                  EMERGENCY SOS INTAKE
+                </h1>
+                <p className="text-[11px] text-rose-100 font-medium">
+                  V2V Expanding-Ring Wave Dispatch Protocol • आपातकालीन मांग
+                </p>
+              </div>
             </div>
           </div>
-          <span className="px-2 py-1 rounded bg-rose-800/80 border border-rose-600 text-[10px] font-bold uppercase tracking-wider text-rose-100">
-            Priority Tier-1
-          </span>
+          <div className="flex items-center gap-3">
+            <a
+              href="tel:104"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 text-xs font-bold text-white transition border border-white/20"
+            >
+              <PhoneCall className="w-3.5 h-3.5 text-amber-300" />
+              <span>104 Helpline</span>
+            </a>
+            <span className="px-2.5 py-1 rounded-lg bg-rose-950/60 border border-rose-500/50 text-[10px] font-bold uppercase tracking-wider text-rose-100">
+              Priority Tier-1
+            </span>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         {/* Anti-Tout Safety Advisory Banner */}
         <section
           aria-label="Anti-Tout Safety Warning"
-          className="rounded-2xl bg-amber-950/70 border-2 border-amber-500/80 p-4 sm:p-5 shadow-lg shadow-amber-950/40 relative overflow-hidden"
+          className="rounded-2xl bg-amber-50 border-2 border-amber-400 p-4 sm:p-5 shadow-sm relative overflow-hidden"
         >
           <div className="flex items-start gap-3.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-300 shrink-0">
-              <ShieldAlert className="w-6 h-6 text-amber-400" />
+            <div className="p-2.5 rounded-xl bg-amber-100 border border-amber-300 text-amber-800 shrink-0">
+              <ShieldAlert className="w-6 h-6 text-amber-700" />
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm sm:text-base font-extrabold text-amber-200 tracking-wide uppercase">
+                <h2 className="text-sm sm:text-base font-extrabold text-amber-950 tracking-wide uppercase">
                   Anti-Tout Safety Warning (NBTC &amp; DPDP Act 2023)
                 </h2>
               </div>
-              <p className="text-xs sm:text-sm text-amber-100/90 leading-relaxed">
-                Voluntary blood &amp; platelet donation is completely <strong className="text-white underline">FREE</strong> under Indian law. Never pay cash, fees, or UPI to middlemen, agents, or hospital touts.
+              <p className="text-xs sm:text-sm text-amber-900 leading-relaxed font-medium">
+                Voluntary blood &amp; platelet donation is completely <strong className="text-rose-700 underline font-extrabold">FREE</strong> under Indian law. Never pay cash, fees, or UPI to middlemen, agents, or hospital touts.
               </p>
-              <div className="pt-1 text-[11px] text-amber-300/80 flex flex-wrap gap-x-4 gap-y-1">
+              <div className="pt-1.5 text-[11px] text-amber-800 font-semibold flex flex-wrap gap-x-4 gap-y-1">
                 <span>✓ Masked Telephony Line (+91-11-4000-xxxx)</span>
                 <span>✓ On-Arrival Handshake PIN Verification</span>
                 <span>✓ Zero Raw Phone Numbers Exposed</span>
@@ -371,87 +400,89 @@ export default function EmergencyRequestNewPage() {
         <SidecarPill variant="banner" />
 
         {/* Live OCR Requisition Slip Simulation Card */}
-        <section className="rounded-2xl bg-slate-900 border border-slate-800 p-4 sm:p-5 shadow-md space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <section className="rounded-3xl bg-white border border-slate-200/90 p-5 sm:p-7 shadow-lg shadow-slate-200/50 space-y-5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2.5">
-              <Camera className="w-5 h-5 text-rose-400" />
+              <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                <Camera className="w-5 h-5 text-rose-600" />
+              </div>
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-white">
+                <h3 className="text-base sm:text-lg font-extrabold text-slate-900">
                   Live Prescription Slip OCR Verification
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Scan hospital requisition slip to auto-populate patient &amp; blood parameters
                 </p>
               </div>
             </div>
-            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+            <span className="text-[10px] uppercase font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
               AI Vision Adapter
             </span>
           </div>
 
           {/* Quick Preset Buttons for Simulation */}
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-slate-300">
+            <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">
               Simulate Doctor&apos;s Prescription Slip (One-Tap Test Presets):
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <button
                 type="button"
                 onClick={() => runOCRSimulation("VALID_AIIMS_SDP", "aiims_trauma_sdp_slip.jpg")}
                 disabled={isScanningSlip}
-                className="flex items-center justify-between p-2.5 rounded-xl text-left bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-rose-500/60 transition group text-xs"
+                className="flex items-center justify-between p-3 rounded-xl text-left bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-300 transition group text-xs shadow-2xs"
               >
                 <div>
-                  <span className="font-bold text-slate-200 block group-hover:text-rose-300">
+                  <span className="font-extrabold text-slate-900 block group-hover:text-rose-700">
                     AIIMS Delhi • SDP
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-500 font-medium">
                     A+ve Platelet Apheresis
                   </span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400" />
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-rose-600 group-hover:translate-x-0.5 transition-transform" />
               </button>
 
               <button
                 type="button"
                 onClick={() => runOCRSimulation("VALID_APOLLO_PRBC", "apollo_delhi_prbc_slip.jpg")}
                 disabled={isScanningSlip}
-                className="flex items-center justify-between p-2.5 rounded-xl text-left bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-rose-500/60 transition group text-xs"
+                className="flex items-center justify-between p-3 rounded-xl text-left bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-300 transition group text-xs shadow-2xs"
               >
                 <div>
-                  <span className="font-bold text-slate-200 block group-hover:text-rose-300">
+                  <span className="font-extrabold text-slate-900 block group-hover:text-rose-700">
                     Apollo • PRBC
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-500 font-medium">
                     B+ve 2 Red Cell Units
                   </span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400" />
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-rose-600 group-hover:translate-x-0.5 transition-transform" />
               </button>
 
               <button
                 type="button"
                 onClick={() => runOCRSimulation("MISSING_STAMP", "unverified_slip.jpg")}
                 disabled={isScanningSlip}
-                className="flex items-center justify-between p-2.5 rounded-xl text-left bg-slate-800/80 hover:bg-slate-800 border border-amber-900/60 hover:border-amber-500/60 transition group text-xs"
+                className="flex items-center justify-between p-3 rounded-xl text-left bg-amber-50/70 hover:bg-amber-100/60 border border-amber-200 hover:border-amber-400 transition group text-xs shadow-2xs"
               >
                 <div>
-                  <span className="font-bold text-amber-300 block">
+                  <span className="font-extrabold text-amber-900 block">
                     Missing Stamp Test
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-amber-700 font-medium">
                     Warning Simulation
                   </span>
                 </div>
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
               </button>
             </div>
           </div>
 
           {/* Upload / Camera Capture Button */}
           <div className="pt-1">
-            <label className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border border-dashed border-slate-700 hover:border-rose-500 bg-slate-950/60 hover:bg-slate-900 cursor-pointer transition text-xs font-semibold text-slate-300">
-              <Upload className="w-4 h-4 text-rose-400" />
+            <label className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-xl border border-dashed border-slate-300 hover:border-rose-500 bg-slate-50 hover:bg-rose-50/50 cursor-pointer transition text-xs font-bold text-slate-700">
+              <Upload className="w-4 h-4 text-rose-600" />
               <span>Capture Photo or Upload Requisition Slip</span>
               <input
                 type="file"
@@ -473,13 +504,13 @@ export default function EmergencyRequestNewPage() {
           {isScanningSlip && (
             <div className="space-y-2 pt-2 animate-fade-in">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-rose-300 font-medium flex items-center gap-2">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-rose-400" />
+                <span className="text-rose-700 font-bold flex items-center gap-2">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-rose-600" />
                   {scanStageText}
                 </span>
-                <span className="font-bold text-rose-400">{scanProgress}%</span>
+                <span className="font-bold text-rose-600">{scanProgress}%</span>
               </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
                 <div
                   className="bg-rose-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${scanProgress}%` }}
@@ -491,28 +522,28 @@ export default function EmergencyRequestNewPage() {
           {/* OCR Result Pill / Confidence Badge */}
           {ocrResult && !isScanningSlip && (
             <div
-              className={`p-3.5 rounded-xl border text-xs space-y-1.5 ${
+              className={`p-4 rounded-xl border text-xs space-y-1.5 ${
                 ocrResult.isValidRequisition
-                  ? "bg-emerald-950/60 border-emerald-700/60 text-emerald-200"
-                  : "bg-amber-950/60 border-amber-700/60 text-amber-200"
+                  ? "bg-emerald-50 border-emerald-300 text-emerald-900"
+                  : "bg-amber-50 border-amber-300 text-amber-900"
               }`}
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold flex items-center gap-1.5">
                   {ocrResult.isValidRequisition ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
                   )}
                   {ocrResult.isValidRequisition
                     ? `Requisition Verified (Confidence: ${(ocrResult.overallConfidence * 100).toFixed(0)}%)`
                     : "Prescription Requires Manual Review"}
                 </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-900/60 border border-slate-700">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-200 shadow-2xs">
                   {ocrResult.doctorStampDetected ? "✓ Stamp Detected" : "⚠️ Stamp Missing"}
                 </span>
               </div>
-              <p className="text-[11px] opacity-90">
+              <p className="text-[11px] opacity-90 leading-relaxed font-medium">
                 {ocrResult.isValidRequisition
                   ? `Extracted: Patient ${ocrResult.fields.patientName || "N/A"} (${ocrResult.fields.patientUhid || "N/A"}), Group ${ocrResult.fields.bloodGroup || "N/A"}, Component ${ocrResult.fields.component || "N/A"}. Fields autofilled below.`
                   : ocrResult.validationWarnings.join(". ") || "Please verify patient identifiers manually."}
@@ -521,9 +552,9 @@ export default function EmergencyRequestNewPage() {
           )}
 
           {ocrError && !isScanningSlip && (
-            <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-200 text-xs flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-              <span>{ocrError}</span>
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 text-xs flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span className="font-medium">{ocrError}</span>
             </div>
           )}
         </section>
@@ -531,46 +562,46 @@ export default function EmergencyRequestNewPage() {
         {/* Live e-RaktKosh Stock Preview Badge */}
         <section aria-label="e-RaktKosh National Stock Preview" className="space-y-2">
           {isCheckingStock ? (
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 flex items-center gap-2 animate-pulse">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-400" />
+            <div className="p-3.5 rounded-2xl bg-white border border-slate-200 text-xs text-slate-500 flex items-center gap-2 shadow-xs animate-pulse">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-rose-600" />
               <span>Querying e-RaktKosh national blood bank registry for {bloodGroup} {component}...</span>
             </div>
           ) : stockPreview ? (
             stockPreview.totalUnitsAvailable > 0 ? (
-              <div className="p-4 rounded-xl bg-amber-950/50 border border-amber-600/70 text-amber-200 text-xs space-y-2 shadow-md">
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-2 shadow-xs">
                 <div className="flex items-center justify-between font-bold">
-                  <span className="flex items-center gap-1.5 text-amber-300">
-                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  <span className="flex items-center gap-1.5 text-amber-950 font-extrabold">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
                     e-RaktKosh Notice: {stockPreview.totalUnitsAvailable} Unit(s) Available in Vicinity
                   </span>
-                  <span className="px-2 py-0.5 rounded bg-amber-900/80 text-[10px] text-amber-100 border border-amber-700">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-[10px] text-amber-800 font-bold border border-amber-300">
                     Nearest: {stockPreview.nearestBankDistanceKm ?? "N/A"} km
                   </span>
                 </div>
-                <p className="text-[11px] text-amber-100/90 leading-relaxed">
+                <p className="text-[11px] text-amber-900/90 leading-relaxed font-medium">
                   Units of <strong>{bloodGroup}</strong> ({component}) are reported in stock across licensed Delhi NCR blood banks. Verify with the hospital blood bank before triggering volunteer donor dispatch.
                 </p>
                 {stockPreview.bloodBanks.length > 0 && (
-                  <div className="pt-1 border-t border-amber-900/40 text-[11px] text-amber-300/90 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <div className="pt-2 border-t border-amber-200 text-[11px] text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                     <span>
                       🏥 <strong>{stockPreview.bloodBanks[0].name}</strong> ({stockPreview.bloodBanks[0].unitsAvailable} units)
                     </span>
-                    <span className="flex items-center gap-1 text-amber-200">
-                      <Phone className="w-3 h-3 text-amber-400" />
+                    <span className="flex items-center gap-1 text-amber-800 font-bold">
+                      <Phone className="w-3 h-3 text-amber-700" />
                       {stockPreview.bloodBanks[0].contactPhone}
                     </span>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-200 text-xs flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs flex items-center justify-between shadow-xs">
                 <div className="flex items-center gap-2">
-                  <Droplet className="w-4 h-4 text-rose-400" />
+                  <Droplet className="w-4 h-4 text-rose-600" />
                   <span>
                     <strong>Critical Shortage:</strong> 0 units of {bloodGroup} {component} reported across nearest licensed blood banks.
                   </span>
                 </div>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-rose-900 text-rose-200 shrink-0 ml-2">
+                <span className="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-rose-600 text-white shrink-0 ml-2 shadow-2xs">
                   Dispatch Required
                 </span>
               </div>
@@ -581,16 +612,16 @@ export default function EmergencyRequestNewPage() {
         {/* SOS Intake Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Section 1: Patient Information */}
-          <section className="rounded-2xl bg-slate-900 border border-slate-800 p-4 sm:p-5 shadow-md space-y-4">
-            <h3 className="text-sm font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-rose-400" />
-              <span>1. Patient &amp; Hospital Details</span>
+          <section className="rounded-3xl bg-white border border-slate-200/90 p-5 sm:p-7 shadow-lg shadow-slate-200/50 space-y-5">
+            <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-rose-600" />
+              <span>1. Patient &amp; Hospital Details (रोगी व अस्पताल विवरण)</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Patient Full Name <span className="text-rose-500">*</span>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
+                  Patient Full Name (मरीज का नाम) <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -598,13 +629,13 @@ export default function EmergencyRequestNewPage() {
                   placeholder="e.g. Aarav Sharma"
                   value={patientName}
                   onChange={(e) => setPatientName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-white placeholder-slate-500 text-sm outline-none transition"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 focus:bg-white focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 text-slate-900 placeholder-slate-400 text-sm outline-none transition font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Patient UHID / MRN <span className="text-rose-500">*</span>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
+                  Patient UHID / MRN (अस्पताल रजिस्ट्रेशन नं.) <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -612,7 +643,7 @@ export default function EmergencyRequestNewPage() {
                   placeholder="e.g. AIIMS-2026-8841"
                   value={patientUhid}
                   onChange={(e) => setPatientUhid(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-white placeholder-slate-500 text-sm outline-none transition font-mono"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 focus:bg-white focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 text-slate-900 placeholder-slate-400 text-sm outline-none transition font-mono font-bold"
                 />
               </div>
             </div>
@@ -620,14 +651,14 @@ export default function EmergencyRequestNewPage() {
             {/* Hospital Presets Dropdown */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide">
                   Hospital Centre (Delhi NCR Presets) <span className="text-rose-500">*</span>
                 </label>
                 <button
                   type="button"
                   onClick={handleDetectGPS}
                   disabled={isLocating}
-                  className="inline-flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 font-semibold transition"
+                  className="inline-flex items-center gap-1.5 text-xs text-rose-600 hover:text-rose-700 font-bold transition"
                 >
                   <LocateFixed className="w-3.5 h-3.5" />
                   <span>{isLocating ? "Acquiring GPS..." : "Detect Location via GPS"}</span>
@@ -637,7 +668,7 @@ export default function EmergencyRequestNewPage() {
               <select
                 value={selectedHospitalPreset}
                 onChange={(e) => handleHospitalPresetChange(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-white text-sm outline-none transition"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 focus:bg-white focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 text-slate-900 text-sm outline-none transition font-semibold"
               >
                 {DELHI_NCR_HOSPITALS.map((hosp) => (
                   <option key={hosp.id} value={hosp.id}>
@@ -648,14 +679,14 @@ export default function EmergencyRequestNewPage() {
               </select>
 
               {locationNotice && (
-                <p className="text-[11px] text-amber-300/90 pt-0.5">{locationNotice}</p>
+                <p className="text-[11px] text-amber-700 font-medium pt-0.5">{locationNotice}</p>
               )}
             </div>
 
             {/* Hospital Name & Coordinates */}
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
                   Hospital Name (Transfusion Ward / Blood Bank)
                 </label>
                 <input
@@ -664,13 +695,13 @@ export default function EmergencyRequestNewPage() {
                   placeholder="e.g. AIIMS Delhi, Trauma Centre"
                   value={hospitalName}
                   onChange={(e) => setHospitalName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 text-white text-sm outline-none transition"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 focus:bg-white focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 text-slate-900 text-sm outline-none transition font-medium"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
                     Latitude (°N)
                   </label>
                   <input
@@ -679,11 +710,11 @@ export default function EmergencyRequestNewPage() {
                     required
                     value={hospitalLat}
                     onChange={(e) => setHospitalLat(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 text-xs font-mono outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">
                     Longitude (°E)
                   </label>
                   <input
@@ -692,7 +723,7 @@ export default function EmergencyRequestNewPage() {
                     required
                     value={hospitalLng}
                     onChange={(e) => setHospitalLng(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 text-xs font-mono outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono outline-none"
                   />
                 </div>
               </div>
@@ -700,15 +731,15 @@ export default function EmergencyRequestNewPage() {
           </section>
 
           {/* Section 2: Transfusion Requirements */}
-          <section className="rounded-2xl bg-slate-900 border border-slate-800 p-4 sm:p-5 shadow-md space-y-5">
-            <h3 className="text-sm font-bold text-white border-b border-slate-800 pb-2 flex items-center gap-2">
-              <Droplet className="w-4 h-4 text-rose-400" />
-              <span>2. Transfusion Specification</span>
+          <section className="rounded-3xl bg-white border border-slate-200/90 p-5 sm:p-7 shadow-lg shadow-slate-200/50 space-y-5">
+            <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+              <Droplet className="w-4 h-4 text-rose-600" />
+              <span>2. Transfusion Specification (रक्त आवश्यकता)</span>
             </h3>
 
             {/* Blood Component Selector */}
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide">
                 Blood Component Needed <span className="text-rose-500">*</span>
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -724,12 +755,12 @@ export default function EmergencyRequestNewPage() {
                     onClick={() => setComponent(item.value)}
                     className={`p-3 rounded-xl text-left border transition-all ${
                       component === item.value
-                        ? "bg-rose-950/70 border-rose-500 text-white shadow-md shadow-rose-950/60"
-                        : "bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700"
+                        ? "bg-rose-50 border-rose-600 text-rose-950 shadow-sm ring-1 ring-rose-500"
+                        : "bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300"
                     }`}
                   >
-                    <span className="font-bold text-xs sm:text-sm block">{item.label}</span>
-                    <span className="text-[11px] text-slate-400 block">{item.sub}</span>
+                    <span className="font-extrabold text-xs sm:text-sm block">{item.label}</span>
+                    <span className="text-[11px] text-slate-500 block">{item.sub}</span>
                   </button>
                 ))}
               </div>
@@ -737,8 +768,8 @@ export default function EmergencyRequestNewPage() {
 
             {/* Blood Group Selector */}
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">
-                Blood Group &amp; Rh Factor <span className="text-rose-500">*</span>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide">
+                Blood Group &amp; Rh Factor (रक्त समूह) <span className="text-rose-500">*</span>
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {[
@@ -756,11 +787,11 @@ export default function EmergencyRequestNewPage() {
                     key={item.group}
                     type="button"
                     onClick={() => setBloodGroup(item.group)}
-                    className={`py-2 px-2.5 rounded-xl text-center border font-semibold text-xs transition-all ${
+                    className={`py-2.5 px-2.5 rounded-xl text-center border font-bold text-xs transition-all ${
                       bloodGroup === item.group
-                        ? "bg-rose-600 border-rose-500 text-white shadow-sm"
-                        : "bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white"
-                    } ${item.group === BloodGroup.BOMBAY_OH ? "col-span-3 sm:col-span-2 text-amber-300 border-amber-900/60" : ""}`}
+                        ? "bg-rose-600 border-rose-600 text-white shadow-md shadow-rose-600/30 scale-105"
+                        : "bg-slate-50 border-slate-200 text-slate-800 hover:border-slate-300"
+                    } ${item.group === BloodGroup.BOMBAY_OH ? "col-span-3 sm:col-span-2 text-amber-700 border-amber-300 bg-amber-50" : ""}`}
                   >
                     {item.label}
                   </button>
@@ -771,11 +802,11 @@ export default function EmergencyRequestNewPage() {
             {/* Request Mode Toggle (Replacement vs Exact) */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide">
                   Request Mode Protocol
                 </label>
                 {component === Component.SDP && (
-                  <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1">
+                  <span className="text-[11px] font-bold text-amber-600 flex items-center gap-1">
                     <Lock className="w-3 h-3" />
                     Locked to EXACT_OR_SDP (NBTC Rule)
                   </span>
@@ -787,19 +818,19 @@ export default function EmergencyRequestNewPage() {
                   type="button"
                   disabled={component === Component.SDP}
                   onClick={() => setRequestMode(RequestMode.REPLACEMENT_ANY)}
-                  className={`p-3 rounded-xl border text-left transition-all ${
+                  className={`p-3.5 rounded-2xl border text-left transition-all ${
                     component === Component.SDP
-                      ? "opacity-40 cursor-not-allowed bg-slate-950/40 border-slate-800 text-slate-500"
+                      ? "opacity-40 cursor-not-allowed bg-slate-100 border-slate-200 text-slate-400"
                       : requestMode === RequestMode.REPLACEMENT_ANY
-                      ? "bg-rose-950/70 border-rose-500 text-white"
-                      : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                      ? "bg-rose-50 border-rose-600 text-rose-950 shadow-sm"
+                      : "bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs sm:text-sm">Replacement Mode</span>
-                    {component === Component.SDP && <Lock className="w-3.5 h-3.5 text-slate-500" />}
+                    <span className="font-extrabold text-xs sm:text-sm">Replacement Mode</span>
+                    {component === Component.SDP && <Lock className="w-3.5 h-3.5 text-slate-400" />}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-[11px] text-slate-500 mt-1 font-medium leading-relaxed">
                     Any donor blood group acceptable for hospital blood bank exchange inventory.
                   </p>
                 </button>
@@ -807,17 +838,17 @@ export default function EmergencyRequestNewPage() {
                 <button
                   type="button"
                   onClick={() => setRequestMode(RequestMode.EXACT_OR_SDP)}
-                  className={`p-3 rounded-xl border text-left transition-all ${
+                  className={`p-3.5 rounded-2xl border text-left transition-all ${
                     requestMode === RequestMode.EXACT_OR_SDP
-                      ? "bg-rose-950/70 border-rose-500 text-white shadow-md shadow-rose-950/60"
-                      : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                      ? "bg-rose-50 border-rose-600 text-rose-950 shadow-sm ring-1 ring-rose-500"
+                      : "bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs sm:text-sm">Exact / Compatible Match</span>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-rose-400" />
+                    <span className="font-extrabold text-xs sm:text-sm">Exact / Compatible Match</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-rose-600" />
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-[11px] text-slate-500 mt-1 font-medium leading-relaxed">
                     Strictly matching or compatible donors required for direct patient transfusion.
                   </p>
                 </button>
@@ -825,9 +856,9 @@ export default function EmergencyRequestNewPage() {
 
               {/* NBTC Clinical Advisory Note when SDP is selected */}
               {component === Component.SDP && (
-                <div className="p-3.5 rounded-xl bg-amber-950/50 border border-amber-600/70 text-amber-200 text-xs flex items-start gap-2.5">
-                  <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <p className="text-[11px] leading-relaxed">
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[11px] leading-relaxed font-medium">
                     <strong>NBTC Clinical Advisory:</strong> Single Donor Platelet (SDP) apheresis transfusions require strictly ABO/Rh compatible or exact matches to prevent severe immune-mediated platelet refractoriness and acute hemolytic reactions. Replacement mode is prohibited for SDP.
                   </p>
                 </div>
@@ -836,32 +867,32 @@ export default function EmergencyRequestNewPage() {
 
             {/* Units Needed Stepper */}
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-300">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide">
                 Units Needed (1 to 10) <span className="text-rose-500">*</span>
               </label>
               <div className="flex items-center gap-3">
-                <div className="flex items-center border border-slate-800 bg-slate-950 rounded-xl overflow-hidden">
+                <div className="flex items-center border border-slate-300 bg-slate-50 rounded-xl overflow-hidden shadow-2xs">
                   <button
                     type="button"
                     onClick={() => setUnitsNeeded((prev) => Math.max(1, prev - 1))}
                     disabled={unitsNeeded <= 1}
-                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 text-base font-bold disabled:opacity-30 disabled:cursor-not-allowed transition"
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-base font-bold disabled:opacity-30 disabled:cursor-not-allowed transition"
                   >
                     −
                   </button>
-                  <span className="px-5 py-2.5 font-bold text-sm text-white min-w-[3rem] text-center">
+                  <span className="px-5 py-2.5 font-black text-sm text-slate-900 min-w-[3rem] text-center">
                     {unitsNeeded}
                   </span>
                   <button
                     type="button"
                     onClick={() => setUnitsNeeded((prev) => Math.min(10, prev + 1))}
                     disabled={unitsNeeded >= 10}
-                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 text-base font-bold disabled:opacity-30 disabled:cursor-not-allowed transition"
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-base font-bold disabled:opacity-30 disabled:cursor-not-allowed transition"
                   >
                     +
                   </button>
                 </div>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-slate-500 font-medium">
                   {component === Component.SDP ? "Platelet apheresis unit(s)" : "Blood bag unit(s)"} (Max 10)
                 </span>
               </div>
@@ -870,8 +901,8 @@ export default function EmergencyRequestNewPage() {
 
           {/* Submission Error Banner */}
           {submissionError && (
-            <div className="p-4 rounded-xl bg-rose-950/90 border border-rose-600 text-rose-200 text-xs flex items-start gap-3 shadow-lg">
-              <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs flex items-start gap-3 shadow-md">
+              <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
               <div>
                 <strong className="block font-bold">Submission Blocked:</strong>
                 <span>{submissionError}</span>
@@ -884,7 +915,7 @@ export default function EmergencyRequestNewPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 px-6 rounded-2xl bg-rose-600 hover:bg-rose-500 active:scale-[0.99] text-white font-extrabold text-base tracking-wide shadow-xl shadow-rose-950/60 transition-all flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-4 px-6 rounded-2xl bg-rose-600 hover:bg-rose-700 active:scale-[0.99] text-white font-extrabold text-base tracking-wide shadow-xl shadow-rose-600/30 transition-all flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -893,13 +924,13 @@ export default function EmergencyRequestNewPage() {
                 </>
               ) : (
                 <>
-                  <Radio className="w-5 h-5 text-rose-200" />
-                  <span>LAUNCH EMERGENCY DISPATCH WAVE</span>
+                  <Radio className="w-5 h-5 text-rose-200 animate-pulse" />
+                  <span>LAUNCH EMERGENCY DISPATCH WAVE (आपातकालीन मांग भेजें)</span>
                   <ChevronRight className="w-5 h-5 text-rose-200" />
                 </>
               )}
             </button>
-            <p className="text-center text-[11px] text-slate-500 mt-2">
+            <p className="text-center text-[11px] text-slate-500 mt-2 font-medium">
               Submitting triggers Wave 1 (0–3 km) dispatch pings to qualified volunteers.
             </p>
           </div>

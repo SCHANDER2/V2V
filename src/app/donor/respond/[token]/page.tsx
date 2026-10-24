@@ -3,6 +3,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import Link from "next/link";
+import { ArrowLeft, PhoneCall, Heart } from "lucide-react";
 import HealthChecklist from "@/components/HealthChecklist";
 import V2VPass from "@/components/V2VPass";
 import SidecarPill from "@/components/SidecarPill";
@@ -98,33 +100,33 @@ export default function DonorRespondPage({
 
     try {
       const res = await axios.post("/api/lease/lock", {
-        requestId: data.request.id,
+        token,
         donorId: data.donor.id,
+        requestId: data.request.id,
       });
 
-      // Update state with newly granted lease
       setData((prev) => {
         if (!prev) return null;
         return {
           ...prev,
           lease: {
-            id: res.data.leaseId,
-            status: res.data.status,
-            leaseExpiresAt: res.data.leaseExpiresAt,
-            handshakePin: res.data.handshakePin,
+            id: res.data.lease.id,
+            status: res.data.lease.status,
+            leaseExpiresAt: res.data.lease.leaseExpiresAt,
+            handshakePin: res.data.lease.handshakePin,
           },
         };
       });
     } catch (err: any) {
-      setLockError(
-        err.response?.data?.error || err.message || "Failed to lock donation slot"
-      );
+      const msg =
+        err.response?.data?.error || err.message || "Slot allocation failed";
+      setLockError(msg);
     } finally {
       setLockingSlot(false);
     }
   };
 
-  // Handle arrival declaration
+  // Handle arrival check-in
   const handleArrive = async () => {
     if (!data?.lease) return;
     try {
@@ -194,7 +196,7 @@ export default function DonorRespondPage({
           <h2 className="text-lg font-bold mt-3 text-red-400">Emergency Link Error</h2>
           <p className="text-xs text-gray-300 mt-2 leading-relaxed">{error}</p>
           <p className="text-[11px] text-gray-500 mt-4">
-            If this emergency is ongoing, please request a refreshed dispatch link or contact the hospital blood bank helpline.
+            If this emergency is ongoing, please request a refreshed dispatch link or contact the hospital blood bank helpline (104).
           </p>
         </div>
       </main>
@@ -210,11 +212,21 @@ export default function DonorRespondPage({
       lease.status === LeaseStatus.ARRIVED);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white pb-12">
+    <main
+      className="min-h-screen text-white pb-16 selection:bg-rose-500 selection:text-white"
+      style={{
+        backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 41, 59, 0.96) 100%), url('https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=1920&q=80')`,
+        backgroundAttachment: "fixed",
+        backgroundSize: "cover",
+      }}
+    >
       {/* Top Header with Sidecar Link */}
       <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-gray-800 px-4 py-3">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
+            <Link href="/" className="p-1 rounded-lg hover:bg-slate-800 text-slate-400" title="Home">
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
             <span className="text-xl">🚑</span>
             <span className="text-xs font-black tracking-widest text-emerald-400 uppercase">
               V2V JIT RESPONSE
@@ -226,19 +238,19 @@ export default function DonorRespondPage({
 
       <div className="max-w-md mx-auto px-4 mt-5 space-y-5">
         {/* Urgent Context Hero Banner */}
-        <div className="bg-gradient-to-r from-red-950/80 to-slate-900 p-5 rounded-3xl border border-red-800/60 shadow-lg">
-          <div className="flex items-center gap-2 text-red-400 text-xs font-bold uppercase tracking-wider mb-1">
-            <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-            <span>Emergency Transfusion Mobilization</span>
+        <div className="bg-gradient-to-r from-red-950/80 to-slate-900 p-6 rounded-3xl border border-red-800/60 shadow-xl">
+          <div className="flex items-center gap-2 text-rose-400 text-xs font-extrabold uppercase tracking-wider mb-1">
+            <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
+            <span>Emergency Transfusion Mobilization (आपातकालीन रक्तदान)</span>
           </div>
-          <h1 className="text-xl font-black text-white leading-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-white leading-tight">
             {request.hospitalName}
           </h1>
-          <p className="text-xs text-gray-300 mt-1">
-            Patient UHID: <span className="font-mono text-sky-400">{request.patientUhid}</span>
+          <p className="text-xs text-slate-300 mt-1">
+            Patient UHID: <span className="font-mono text-amber-400 font-bold">{request.patientUhid}</span>
           </p>
 
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-red-900/60 border border-red-700/60 rounded-xl text-xs font-bold text-red-200">
+          <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 bg-rose-900/60 border border-rose-700/60 rounded-xl text-xs font-bold text-rose-100">
             <span>Needed: {request.bloodGroup} • {request.component}</span>
           </div>
         </div>
@@ -270,12 +282,12 @@ export default function DonorRespondPage({
         {/* CASE 2: Standby Buffer Screen                                */}
         {/* ------------------------------------------------------------- */}
         {isStandby && (
-          <div className="bg-slate-900 p-6 rounded-3xl border-2 border-amber-500/60 shadow-2xl text-center space-y-4">
+          <div className="bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border-2 border-amber-500/60 shadow-2xl text-center space-y-4">
             <div className="h-16 w-16 mx-auto rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-3xl">
               ⏳
             </div>
             <div>
-              <span className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full text-xs font-mono font-bold">
+              <span className="px-3.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full text-xs font-mono font-bold">
                 STANDBY BUFFER QUEUE
               </span>
               <h2 className="text-lg font-bold text-white mt-2">
