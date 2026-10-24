@@ -89,6 +89,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showQrModal, setShowQrModal] = useState(false);
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
+  const [showCompatibilityModal, setShowCompatibilityModal] = useState(false);
   const [eligibilityAnswers, setEligibilityAnswers] = useState({
     age: true,
     weight: true,
@@ -342,6 +343,148 @@ export default function HomePage() {
                 States &amp; UTs Covered
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4.5 LIVE BLOOD STOCK & CENTRES FINDER (RaktKhoj Core Live Service) */}
+      <section className="py-12 bg-[#faf9f6] border-b border-black/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-[#e8394c]">
+                Live e-RaktKosh Inventory
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17151a] tracking-tight mt-1">
+                Find Blood Stocks &amp; Verified Centres
+              </h2>
+              <p className="text-xs sm:text-sm text-[#5f4e52] mt-1">
+                Real-time component units and immediate contact with hospital blood transfusion departments.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setShowCompatibilityModal(true)}
+                className="text-xs font-bold text-[#e8394c] hover:underline flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e8394c]/10"
+              >
+                <Info className="w-3.5 h-3.5" /> Blood Compatibility Chart
+              </button>
+              <Link
+                href="/directory"
+                className="text-xs font-bold text-[#17151a] hover:text-[#e8394c] flex items-center gap-1"
+              >
+                Open Full Directory &rarr;
+              </Link>
+            </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="bg-white rounded-2xl p-4 sm:p-6 border border-black/5 shadow-sm mb-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="relative md:col-span-2">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search hospital name, area, or locality (e.g. AIIMS, Apollo, Ring Road)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 text-sm font-medium rounded-xl border border-black/10 focus:outline-none focus:ring-2 focus:ring-[#e8394c]"
+                />
+              </div>
+              <Link
+                href={`/request/new?group=${selectedGroup}`}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#e8394c] hover:bg-[#d22d40] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all"
+              >
+                <AlertCircle className="w-4 h-4" />
+                Trigger Emergency SOS
+              </Link>
+            </div>
+
+            {/* Blood group pill selectors */}
+            <div>
+              <span className="text-[11px] font-bold text-[#5f4e52] uppercase tracking-wider block mb-2">
+                Select Blood Group / Component:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {BLOOD_GROUPS.map((bg) => (
+                  <button
+                    key={bg.key}
+                    onClick={() => setSelectedGroup(bg.key)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      selectedGroup === bg.key
+                        ? "bg-[#e8394c] text-white shadow-md shadow-[#e8394c]/20 scale-105"
+                        : "bg-gray-100 hover:bg-gray-200 text-[#17151a]"
+                    }`}
+                  >
+                    {bg.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Live Blood Centre Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {filteredBanks.map((bank, idx) => {
+              const units = (bank.stock as any)[selectedGroup] || 0;
+              return (
+                <div
+                  key={idx}
+                  className="bg-white rounded-2xl p-5 border border-black/5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gray-100 text-[#5f4e52]">
+                        {bank.category}
+                      </span>
+                      <span className="text-[11px] font-bold text-[#1f9d67] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#1f9d67] animate-pulse"></span>
+                        {bank.status}
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-sm text-[#17151a] line-clamp-2 mb-1">
+                      {bank.name}
+                    </h3>
+                    <p className="text-xs text-[#5f4e52] flex items-center gap-1 mb-3">
+                      <MapPin className="w-3 h-3 text-[#e8394c] shrink-0" />
+                      <span className="truncate">{bank.location}</span>
+                    </p>
+
+                    {/* Stock pill */}
+                    <div className="p-3 rounded-xl bg-[#fff8f8] border border-[#e8394c]/10 mb-4">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-xs font-semibold text-[#5f4e52]">
+                          Available {selectedGroup.replace('_', '+')}:
+                        </span>
+                        <span className="text-lg font-extrabold text-[#e8394c]">
+                          {units} Units
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-[#1f9d67] font-semibold block mt-0.5">
+                        Verified &bull; Updated 10m ago
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-black/5 flex items-center justify-between gap-2">
+                    <a
+                      href={`tel:${bank.phone}`}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#17151a] hover:text-[#e8394c] px-3 py-1.5 rounded-lg border border-black/10 hover:border-black/20"
+                    >
+                      <PhoneCall className="w-3.5 h-3.5 text-[#e8394c]" />
+                      Call
+                    </a>
+                    <Link
+                      href={`/request/new?hospital=${encodeURIComponent(bank.name)}&group=${selectedGroup}`}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#e8394c] hover:bg-[#d22d40] px-3.5 py-1.5 rounded-lg shadow-sm"
+                    >
+                      Request SOS
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -1083,6 +1226,127 @@ export default function HomePage() {
                 className="px-6 py-2.5 rounded-full bg-[#e8394c] hover:bg-[#d22d40] text-white text-xs font-bold shadow-md"
               >
                 Proceed to Register &rarr;
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BLOOD COMPATIBILITY MODAL (RaktKhoj Core Feature) */}
+      {showCompatibilityModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-black/5 relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowCompatibilityModal(false)}
+              className="absolute top-5 right-5 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-black transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-[#e8394c]/10 text-[#e8394c] flex items-center justify-center">
+                <Droplet className="w-5 h-5 fill-current" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-[#17151a]">
+                  Blood Group Compatibility Guide
+                </h3>
+                <p className="text-xs text-[#5f4e52]">
+                  Who can donate to whom &bull; Red Blood Cells &amp; Platelets
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Highlights */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              <div className="p-3.5 rounded-2xl bg-[#fff8f8] border border-[#e8394c]/20">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#e8394c] block">
+                  Universal Red Cell Donor
+                </span>
+                <span className="text-base font-extrabold text-[#17151a]">O Negative (O-)</span>
+                <p className="text-[11px] text-[#5f4e52] mt-0.5">
+                  Can give red blood cells to any patient regardless of blood group. Crucial for emergency trauma resuscitation.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-[#f0fbf6] border border-[#1f9d67]/20">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#1f9d67] block">
+                  Universal Plasma &amp; Receiver
+                </span>
+                <span className="text-base font-extrabold text-[#17151a]">AB Positive (AB+)</span>
+                <p className="text-[11px] text-[#5f4e52] mt-0.5">
+                  Can safely receive whole blood or PRBC from all blood groups. AB- is universal plasma donor.
+                </p>
+              </div>
+            </div>
+
+            {/* Table Matrix */}
+            <div className="overflow-x-auto rounded-2xl border border-black/10 mb-6">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-gray-50 text-gray-600 font-bold border-b border-black/10">
+                  <tr>
+                    <th className="p-3">Blood Group</th>
+                    <th className="p-3">Can Donate Red Cells To</th>
+                    <th className="p-3">Can Receive Red Cells From</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-black/5">
+                  <tr>
+                    <td className="p-3 font-extrabold text-[#e8394c]">O-</td>
+                    <td className="p-3 font-semibold text-[#1f9d67]">All Blood Types (Universal)</td>
+                    <td className="p-3">O- only</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-extrabold text-[#17151a]">O+</td>
+                    <td className="p-3">O+, A+, B+, AB+</td>
+                    <td className="p-3">O+, O-</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-extrabold text-[#17151a]">A-</td>
+                    <td className="p-3">A-, A+, AB-, AB+</td>
+                    <td className="p-3">A-, O-</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-extrabold text-[#17151a]">A+</td>
+                    <td className="p-3">A+, AB+</td>
+                    <td className="p-3">A+, A-, O+, O-</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-extrabold text-[#17151a]">B-</td>
+                    <td className="p-3">B-, B+, AB-, AB+</td>
+                    <td className="p-3">B-, O-</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-extrabold text-[#17151a]">B+</td>
+                    <td className="p-3">B+, AB+</td>
+                    <td className="p-3">B+, B-, O+, O-</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-extrabold text-[#17151a]">AB-</td>
+                    <td className="p-3">AB-, AB+</td>
+                    <td className="p-3">AB-, A-, B-, O-</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-extrabold text-[#17151a]">AB+</td>
+                    <td className="p-3">AB+ only</td>
+                    <td className="p-3 font-semibold text-[#1f9d67]">All Blood Types (Universal)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => setShowCompatibilityModal(false)}
+                className="px-5 py-2.5 text-xs font-semibold text-gray-500 hover:text-black"
+              >
+                Close
+              </button>
+              <Link
+                href="/register"
+                className="px-6 py-2.5 rounded-full bg-[#e8394c] hover:bg-[#d22d40] text-white text-xs font-bold shadow-md"
+              >
+                Register as Voluntary Donor &rarr;
               </Link>
             </div>
           </div>

@@ -458,20 +458,24 @@ export default function RegisterPage() {
         )}
       </main>
 
-      {/* 4. Minimal Footer */}
-      <footer className="bg-white border-t border-[var(--border)] py-8 px-4 text-xs text-[var(--text-dim)]">
-        <div className="max-w-[1000px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[var(--accent)] text-white">
-              <Droplet className="h-3.5 w-3.5 fill-white" />
+      {/* 4. Modern Dark Footer */}
+      <footer className="bg-[#121114] text-white py-12 px-4 text-xs border-t border-white/5 mt-auto">
+        <div className="max-w-[1100px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#e8394c] text-white">
+              <Droplet className="h-4 w-4 fill-white" />
             </span>
-            <span className="font-bold text-[var(--text)]">RaktKhoj</span>
-            <span>• Voluntary Donor Network</span>
+            <div>
+              <span className="font-extrabold text-white text-base tracking-tight">raktkhoj<span className="text-[#e8394c]">.</span></span>
+              <p className="text-gray-400 text-[11px]">Voluntary Donor Network &bull; 24x7 Helpline: 104 / 1075</p>
+            </div>
           </div>
-          <div className="flex gap-4">
-            <Link href="/" className="hover:text-[var(--text)] transition">Home</Link>
-            <Link href="/directory" className="hover:text-[var(--text)] transition">Directory</Link>
-            <Link href="/camps" className="hover:text-[var(--text)] transition">Camps</Link>
+          <div className="flex flex-wrap items-center gap-6 text-gray-300 font-semibold">
+            <Link href="/" className="hover:text-[#e8394c] transition">Home</Link>
+            <Link href="/directory" className="hover:text-[#e8394c] transition">Blood Banks</Link>
+            <Link href="/register" className="hover:text-[#e8394c] transition">Donor Registry</Link>
+            <Link href="/camps" className="hover:text-[#e8394c] transition">Donation Camps</Link>
+            <Link href="/request/new" className="text-[#e8394c] hover:underline font-bold">SOS Dispatch</Link>
           </div>
         </div>
       </footer>
