@@ -1,10 +1,9 @@
 // Lease manager engine for V2V
 // Implements Counter‑Loop 2 (atomic N+1 token bucket) and Counter‑Loop 3 (dead‑man's switch eviction)
 
-import { PrismaClient, EmergencyRequest, DonorLease } from "@prisma/client";
+import { EmergencyRequest, DonorLease } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { LeaseStatus } from "@/types/enums";
-
-const prisma = new PrismaClient();
 
 /** Simple helper to add minutes to a Date */
 function addMinutes(date: Date, minutes: number): Date {

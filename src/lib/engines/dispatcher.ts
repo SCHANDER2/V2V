@@ -1,13 +1,12 @@
 // Dispatcher engine for V2V emergency blood dispatch
 // Handles geospatial wave selection, batch limiting, and anti‑spam cooldowns
 
-import { PrismaClient, EmergencyRequest, Donor } from "@prisma/client";
+import { EmergencyRequest, Donor } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { BloodGroup, WaveState, LeaseStatus } from "@/types/enums";
 import { HaversineDistance } from "@/utils/haversine";
 import { prioritizedGroups } from "./compatibility";
 import { isEligible } from "./eligibility";
-
-const prisma = new PrismaClient();
 
 /**
  * Configuration constants for counter‑loop 1 (Expanding Ring Wave Batching)

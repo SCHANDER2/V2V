@@ -34,10 +34,8 @@ yarn-error.log*
 next-env.d.ts
 
 # SQLite / Local DB
-prisma/*.db
 prisma/*.db-journal
 *.sqlite
-*.db
 
 # Internal agents & transcripts
 /.agents/

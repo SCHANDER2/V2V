@@ -12,6 +12,12 @@ const nextConfig = {
   // (ENOTEMPTY / ENOENT in .next/standalone during trace collection).
   ...(process.env.STANDALONE_BUILD === "true" ? { output: "standalone" } : {}),
   images: { unoptimized: true },
+  experimental: {
+    outputFileTracingIncludes: {
+      "/api/**/*": ["./prisma/dev.db"],
+      "/**/*": ["./prisma/dev.db"],
+    },
+  },
 };
 
 module.exports = withPWA(nextConfig);
