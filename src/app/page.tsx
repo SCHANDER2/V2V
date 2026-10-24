@@ -213,16 +213,16 @@ export default function HomePage() {
               <Droplet className="w-6 h-6 fill-white" />
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-slate-900">
-                  Rakt<span className="text-rose-600">Khoj</span>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-2xl sm:text-3xl tracking-tight text-slate-900">
+                  V<span className="text-rose-600">2</span>V
                 </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 uppercase tracking-wider">
-                  V2V Portal
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 uppercase tracking-wider border border-rose-200">
+                  Emergency Dispatch
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-medium hidden sm:block -mt-0.5">
-                रक्त खोजें • Veins to Veins Emergency Blood &amp; Platelet Network
+                Veins to Veins • भारत आपातकालीन रक्त एवं प्लेटलेट नेटवर्क
               </p>
             </div>
           </Link>
@@ -1029,7 +1029,7 @@ export default function HomePage() {
                 V2V
               </div>
               <span className="font-extrabold text-white text-sm">
-                RaktKhoj • रक्त खोजें व रक्तदान करें
+                V2V (Veins to Veins) • भारत आपातकालीन रक्त एवं प्लेटलेट सेवा
               </span>
             </div>
             <p className="text-slate-400 text-center md:text-left text-xs">
