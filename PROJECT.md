@@ -60,8 +60,8 @@ Database layer: Configured with SQLite (`file:./dev.db`) for portable local exec
 |---|------|-------|-------------|--------|
 | M1 | Foundation: Schema, Seed & Engines | Features 1–4. Tooling config, SQLite schema migration, engine fixes in `lease-manager.ts` and `dispatcher.ts`, `prisma/seed.ts` (52 donors, 3 hospitals). | none | DONE |
 | M2 | Adapters, Cron & Link Generation | Features 5–13. Mock adapters (`ERaktKosh`, `WhatsApp`, `Telephony`, `OCR`), DI registry, `/api/cron/lease-watchdog`, short-hash generator, API endpoints. | M1 | DONE |
-| M3 | UI Pages & Sidecar Integration | Features 14–34. App Router pages: `/request/new`, `/r/[short_hash]`, `/donor/respond/[token]`, `/admin/simulator`, `sidecar://` pill link integration. | M2 | IN_PROGRESS |
-| M4 | Final Milestone: E2E Pass & Hardening | Features 35–37. Pass 100% of E2E test suite (Tiers 1-4), Tier 5 adversarial hardening, verify AC1-AC6 (`npm run seed`, `npm test`, `npm run build`). | M3, TEST_READY | PLANNED |
+| M3 | UI Pages & Sidecar Integration | Features 14–34. App Router pages: `/request/new`, `/r/[short_hash]`, `/donor/respond/[token]`, `/admin/simulator`, `sidecar://` pill link integration. | M2 | DONE |
+| M4 | Final Milestone: E2E Pass & Hardening | Features 35–37. Pass 100% of E2E test suite (Tiers 1-4), Tier 5 adversarial hardening, verify AC1-AC6 (`npm run seed`, `npm test`, `npm run build`). | M3, TEST_READY | DONE |
 
 ---
 
