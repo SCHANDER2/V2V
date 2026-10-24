@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   Heart,
@@ -17,10 +17,7 @@ import {
   Download,
   ArrowRight,
   ChevronRight,
-  Info,
-  Activity,
-  Check,
-  X
+  Info
 } from "lucide-react";
 import SidecarPill from "@/components/SidecarPill";
 import HealthChecklist from "@/components/HealthChecklist";
@@ -34,8 +31,7 @@ const BLOOD_GROUPS = [
   { key: "B_POS", label: "B+", donateTo: "B+, AB+", receiveFrom: "B+, B-, O+, O-" },
   { key: "B_NEG", label: "B-", donateTo: "B+, B-, AB+, AB-", receiveFrom: "B-, O-" },
   { key: "AB_POS", label: "AB+", donateTo: "AB+ Only", receiveFrom: "All Blood Groups (Universal Receiver)" },
-  { key: "AB_NEG", label: "AB-", donateTo: "AB+, AB-", receiveFrom: "AB-, A-, B-, O-" },
-  { key: "BOMBAY_OH", label: "Bombay (hh)", donateTo: "All ABO Groups", receiveFrom: "Bombay (hh) Only" }
+  { key: "AB_NEG", label: "AB-", donateTo: "AB+, AB-", receiveFrom: "AB-, A-, B-, O-" }
 ];
 
 export default function RegisterPage() {
@@ -49,7 +45,6 @@ export default function RegisterPage() {
   const [weightKg, setWeightKg] = useState<number>(65);
   const [bloodGroup, setBloodGroup] = useState<string>("O_POS");
   const [district, setDistrict] = useState<string>("South Delhi");
-  const [state, setState] = useState<string>("Delhi NCR");
   const [willingPlatelets, setWillingPlatelets] = useState<boolean>(true);
   const [healthPassed, setHealthPassed] = useState<boolean>(false);
   const [generatedDonorId, setGeneratedDonorId] = useState<string>("");
@@ -58,12 +53,11 @@ export default function RegisterPage() {
   const selectedBgMeta = BLOOD_GROUPS.find((b) => b.key === bloodGroup) || BLOOD_GROUPS[0];
 
   const handleCompleteRegistration = () => {
-    const id = `V2V-IND-${Math.floor(100000 + Math.random() * 900000)}`;
+    const id = `RK-${Math.floor(100000 + Math.random() * 900000)}`;
     setGeneratedDonorId(id);
 
-    // Save to local storage for persistence
     try {
-      const existing = JSON.parse(localStorage.getItem("v2v_registered_donors") || "[]");
+      const existing = JSON.parse(localStorage.getItem("raktkhoj_registered_donors") || "[]");
       const newDonor = {
         id,
         name,
@@ -73,11 +67,10 @@ export default function RegisterPage() {
         weightKg,
         bloodGroup,
         district,
-        state,
         willingPlatelets,
         registeredAt: new Date().toISOString()
       };
-      localStorage.setItem("v2v_registered_donors", JSON.stringify([...existing, newDonor]));
+      localStorage.setItem("raktkhoj_registered_donors", JSON.stringify([...existing, newDonor]));
     } catch {
       // Local storage fallback
     }
@@ -86,148 +79,107 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-rose-500 selection:text-white">
-      {/* 1. Indian Emergency Top Bar */}
-      <header className="bg-gradient-to-r from-rose-800 via-red-800 to-rose-900 text-white text-xs sm:text-sm font-medium py-2 px-4 shadow-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-200 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+    <div className="min-h-screen bg-white text-[var(--text)] flex flex-col font-sans selection:bg-[var(--accent)] selection:text-white">
+      {/* 1. Minimal Header (RaktKhoj Style) */}
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
+        <div className="max-w-[1200px] mx-auto flex h-[68px] items-center justify-between px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[var(--accent)] text-white shadow-xs group-hover:scale-105 transition-transform">
+              <Droplet className="h-5 w-5 fill-white" />
             </span>
-            <span className="font-semibold tracking-wide flex items-center gap-1.5">
-              <span>🇮🇳</span>
-              <span>National Voluntary Blood Donor Registry • NBTC Standards</span>
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3 text-xs">
-            <a
-              href="tel:104"
-              className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full font-bold inline-flex items-center gap-1.5 transition border border-white/30"
-            >
-              <PhoneCall className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-              <span>National Blood Helpline: 104 (24x7)</span>
-            </a>
-          </div>
-        </div>
-      </header>
-
-      {/* 2. Main Navigation Bar */}
-      <nav className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-[37px] z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-600 to-red-700 flex items-center justify-center text-white shadow-md shadow-rose-600/25 group-hover:scale-105 transition-transform">
-              <Droplet className="w-5 h-5 fill-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-2xl tracking-tight text-slate-900">
-                  V<span className="text-rose-600">2</span>V
-                </span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 uppercase tracking-wider border border-rose-200">
-                  Donor Registry
-                </span>
-              </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-xl tracking-tight text-[var(--text)]">
+                RaktKhoj
+              </span>
+              <span className="text-[10px] text-[var(--text-dim)] font-medium -mt-1 hidden sm:block">
+                Donor Registration
+              </span>
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-700">
-            <Link href="/" className="hover:text-rose-600 transition">
+          <nav className="hidden md:flex items-center gap-7 text-[13.5px] font-semibold text-[var(--text-dim)]">
+            <Link href="/" className="hover:text-[var(--accent)] transition">
               Home
             </Link>
-            <Link href="/directory" className="hover:text-rose-600 transition">
-              Blood Bank Directory
+            <Link href="/directory" className="hover:text-[var(--accent)] transition">
+              Blood Banks
             </Link>
-            <Link href="/register" className="text-rose-600 font-bold border-b-2 border-rose-600 pb-0.5">
-              Register as Donor
+            <Link href="/register" className="text-[var(--accent)] font-bold">
+              Become a Donor
             </Link>
-            <Link href="/camps" className="hover:text-rose-600 transition">
+            <Link href="/camps" className="hover:text-[var(--accent)] transition">
               Donation Camps
             </Link>
-          </div>
+          </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3">
             <SidecarPill compact />
             <Link
               href="/request/new"
-              className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md shadow-rose-600/25 flex items-center gap-2 text-xs sm:text-sm transition hover:scale-[1.02]"
+              className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold px-4 py-2 rounded-full text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition-all"
             >
-              <AlertCircle className="w-4 h-4 animate-bounce" />
+              <AlertCircle className="w-3.5 h-3.5" />
               <span>Emergency SOS</span>
             </Link>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* 3. Hero Header & Step Tracker */}
-      <section className="bg-gradient-to-b from-slate-900 via-rose-950 to-slate-900 text-white py-10 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1 rounded-full text-xs font-semibold text-rose-200 border border-white/15 mb-3">
-            <Heart className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-            <span>Join 52,000+ Verified Lifesavers Across Delhi NCR</span>
+      {/* 2. Wizard Hero Header */}
+      <section className="bg-[var(--surface)] border-b border-[var(--border)] py-10 px-4 text-center">
+        <div className="max-w-[700px] mx-auto">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent)] block mb-1">
+            Voluntary Lifesaver Network
           </span>
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-2">
-            Voluntary Donor Registration
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text)] mb-2">
+            Register as a Blood Donor
           </h1>
-          <p className="text-rose-200 text-sm max-w-xl mx-auto mb-8">
-            Complete the 2-minute clinical screening, get your instant V2V digital donor pass, and receive SOS pings only when an emergency patient nearby matches your blood.
+          <p className="text-xs sm:text-sm text-[var(--text-dim)] max-w-md mx-auto mb-6">
+            Join thousands of verified donors. You will receive notifications only when an emergency patient nearby matches your blood group.
           </p>
 
-          {/* Stepper Wizard */}
-          <div className="flex items-center justify-center gap-2 sm:gap-4 max-w-md mx-auto text-xs">
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold ${step === 1 ? "bg-amber-400 text-slate-950 shadow-md" : step > 1 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-white/10 text-white/50"}`}>
-              <span>1</span>
-              <span className="hidden sm:inline">Profile</span>
+          {/* Stepper Pills */}
+          <div className="flex items-center justify-center gap-2 max-w-sm mx-auto text-xs font-bold">
+            <div className={`px-3 py-1 rounded-full transition-all ${step === 1 ? "bg-[var(--accent)] text-white shadow-xs" : step > 1 ? "bg-[var(--good-wash)] text-[var(--good)]" : "bg-white border border-[var(--border)] text-[var(--text-faint)]"}`}>
+              1. Profile
             </div>
-            <div className="w-4 h-px bg-white/20"></div>
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold ${step === 2 ? "bg-amber-400 text-slate-950 shadow-md" : step > 2 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-white/10 text-white/50"}`}>
-              <span>2</span>
-              <span className="hidden sm:inline">Blood Group</span>
+            <div className={`px-3 py-1 rounded-full transition-all ${step === 2 ? "bg-[var(--accent)] text-white shadow-xs" : step > 2 ? "bg-[var(--good-wash)] text-[var(--good)]" : "bg-white border border-[var(--border)] text-[var(--text-faint)]"}`}>
+              2. Blood Group
             </div>
-            <div className="w-4 h-px bg-white/20"></div>
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold ${step === 3 ? "bg-amber-400 text-slate-950 shadow-md" : step > 3 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-white/10 text-white/50"}`}>
-              <span>3</span>
-              <span className="hidden sm:inline">Clinical NBTC</span>
+            <div className={`px-3 py-1 rounded-full transition-all ${step === 3 ? "bg-[var(--accent)] text-white shadow-xs" : step > 3 ? "bg-[var(--good-wash)] text-[var(--good)]" : "bg-white border border-[var(--border)] text-[var(--text-faint)]"}`}>
+              3. Screening
             </div>
-            <div className="w-4 h-px bg-white/20"></div>
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold ${step === 4 ? "bg-amber-400 text-slate-950 shadow-md" : "bg-white/10 text-white/50"}`}>
-              <span>4</span>
-              <span className="hidden sm:inline">V2V Pass</span>
+            <div className={`px-3 py-1 rounded-full transition-all ${step === 4 ? "bg-[var(--accent)] text-white shadow-xs" : "bg-white border border-[var(--border)] text-[var(--text-faint)]"}`}>
+              4. Pass
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. Main Wizard Content */}
-      <main className="max-w-2xl mx-auto px-4 py-8 w-full flex-1">
-        {/* STEP 1: Personal Details */}
+      {/* 3. Main Form Container */}
+      <main className="max-w-[620px] mx-auto px-4 py-8 w-full flex-1">
+        {/* STEP 1: Basic Info */}
         {step === 1 && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
-                1
-              </div>
-              <div>
-                <h2 className="font-extrabold text-lg text-slate-900">Personal &amp; Contact Information</h2>
-                <p className="text-xs text-slate-500">Real phone numbers are never made public (Anti-Tout Protection)</p>
-              </div>
-            </div>
+          <div className="bg-white border border-[var(--border-strong)] rounded-2xl p-6 sm:p-8 shadow-[var(--shadow-card)]">
+            <h2 className="text-lg font-bold text-[var(--text)] mb-1">Your Details</h2>
+            <p className="text-xs text-[var(--text-dim)] mb-6">
+              Your phone number is strictly protected and never displayed publicly.
+            </p>
 
-            <div className="space-y-4">
+            <div className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name (As per Govt ID)</label>
+                <label className="block font-bold text-[var(--text)] mb-1">Full Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Dr. Rajesh Verma"
+                  placeholder="e.g. Rahul Sharma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--text)] text-sm font-medium focus:ring-2 focus:ring-[var(--accent)] focus:outline-hidden"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">10-Digit Mobile Number (For WhatsApp SOS)</label>
+                <label className="block font-bold text-[var(--text)] mb-1">Mobile Number (WhatsApp Enabled)</label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">+91</span>
                   <input
@@ -236,18 +188,18 @@ export default function RegisterPage() {
                     placeholder="9876543210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                    className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                    className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--text)] text-sm font-medium focus:ring-2 focus:ring-[var(--accent)] focus:outline-hidden"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>
+                  <label className="block font-bold text-[var(--text)] mb-1">Gender</label>
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                    className="w-full px-3 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--text)] text-sm font-medium focus:ring-2 focus:ring-[var(--accent)] focus:outline-hidden"
                   >
                     <option value="MALE">Male</option>
                     <option value="FEMALE">Female</option>
@@ -255,37 +207,37 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Age (18–65 Yrs)</label>
+                  <label className="block font-bold text-[var(--text)] mb-1">Age (18–65)</label>
                   <input
                     type="number"
                     min="18"
                     max="65"
                     value={age}
                     onChange={(e) => setAge(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--text)] text-sm font-medium focus:ring-2 focus:ring-[var(--accent)] focus:outline-hidden"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Weight in Kg (&gt;50kg required)</label>
+                  <label className="block font-bold text-[var(--text)] mb-1">Weight (&gt;50 kg)</label>
                   <input
                     type="number"
-                    min="40"
+                    min="45"
                     max="150"
                     value={weightKg}
                     onChange={(e) => setWeightKg(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--text)] text-sm font-medium focus:ring-2 focus:ring-[var(--accent)] focus:outline-hidden"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">District / City</label>
+                  <label className="block font-bold text-[var(--text)] mb-1">District</label>
                   <select
                     value={district}
                     onChange={(e) => setDistrict(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                    className="w-full px-3 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--text)] text-sm font-medium focus:ring-2 focus:ring-[var(--accent)] focus:outline-hidden"
                   >
                     <option value="South Delhi">South Delhi</option>
                     <option value="Central Delhi">Central Delhi</option>
@@ -293,7 +245,6 @@ export default function RegisterPage() {
                     <option value="North West Delhi">North West Delhi</option>
                     <option value="Faridabad">Faridabad</option>
                     <option value="Gurugram">Gurugram</option>
-                    <option value="Noida">Noida</option>
                   </select>
                 </div>
               </div>
@@ -303,9 +254,9 @@ export default function RegisterPage() {
                   type="button"
                   disabled={!name.trim() || phone.length < 10 || age < 18 || weightKg < 45}
                   onClick={() => setStep(2)}
-                  className="w-full bg-rose-600 hover:bg-rose-700 disabled:bg-slate-300 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm shadow-md transition"
+                  className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:bg-slate-200 text-white font-bold py-3 rounded-full flex items-center justify-center gap-1.5 text-xs sm:text-sm shadow-xs transition"
                 >
-                  <span>Continue to Blood Compatibility</span>
+                  <span>Continue</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -313,21 +264,15 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* STEP 2: Blood Group & Compatibility Visualizer */}
+        {/* STEP 2: Blood Details */}
         {step === 2 && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
-                2
-              </div>
-              <div>
-                <h2 className="font-extrabold text-lg text-slate-900">Select Your Blood Group</h2>
-                <p className="text-xs text-slate-500">Live clinical compatibility mapping</p>
-              </div>
-            </div>
+          <div className="bg-white border border-[var(--border-strong)] rounded-2xl p-6 sm:p-8 shadow-[var(--shadow-card)]">
+            <h2 className="text-lg font-bold text-[var(--text)] mb-1">Select Blood Group</h2>
+            <p className="text-xs text-[var(--text-dim)] mb-6">
+              Clinical compatibility mapping
+            </p>
 
-            {/* Blood Group Radio Grid */}
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 mb-6">
+            <div className="grid grid-cols-4 gap-2 mb-6">
               {BLOOD_GROUPS.map((bg) => {
                 const isSelected = bloodGroup === bg.key;
                 return (
@@ -337,47 +282,39 @@ export default function RegisterPage() {
                     onClick={() => setBloodGroup(bg.key)}
                     className={`p-3 rounded-xl border text-center transition-all ${
                       isSelected
-                        ? "bg-rose-600 border-rose-600 text-white shadow-md scale-105"
-                        : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800"
+                        ? "bg-[var(--accent)] border-[var(--accent)] text-white shadow-xs scale-105"
+                        : "bg-[var(--surface)] hover:bg-[var(--surface-hover)] border-[var(--border)] text-[var(--text)]"
                     }`}
                   >
-                    <Droplet className={`w-5 h-5 mx-auto mb-1 ${isSelected ? "fill-white text-white" : "text-rose-500"}`} />
-                    <span className="font-black text-sm block">{bg.label}</span>
+                    <span className="font-extrabold text-sm block">{bg.label}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Live Compatibility Card */}
-            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-6">
-              <div className="flex items-center gap-2 font-bold text-rose-950 text-sm mb-3">
-                <ShieldCheck className="w-4 h-4 text-rose-600" />
-                <span>Your Compatibility Matrix ({selectedBgMeta.label}):</span>
+            {/* Compatibility info card */}
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 mb-6 text-xs space-y-2">
+              <div className="flex gap-2">
+                <span className="font-bold text-[var(--good)] shrink-0">Can Donate To:</span>
+                <span className="font-medium text-[var(--text)]">{selectedBgMeta.donateTo}</span>
               </div>
-
-              <div className="space-y-2 text-xs">
-                <div className="flex items-start gap-2 bg-white/70 p-2.5 rounded-lg border border-rose-100">
-                  <span className="font-bold text-emerald-700 shrink-0">Can Donate To:</span>
-                  <span className="text-slate-800 font-semibold">{selectedBgMeta.donateTo}</span>
-                </div>
-                <div className="flex items-start gap-2 bg-white/70 p-2.5 rounded-lg border border-rose-100">
-                  <span className="font-bold text-sky-700 shrink-0">Can Receive From:</span>
-                  <span className="text-slate-800 font-semibold">{selectedBgMeta.receiveFrom}</span>
-                </div>
+              <div className="flex gap-2">
+                <span className="font-bold text-sky-700 shrink-0">Can Receive From:</span>
+                <span className="font-medium text-[var(--text)]">{selectedBgMeta.receiveFrom}</span>
               </div>
             </div>
 
-            {/* Platelet / SDP Willingness Toggle */}
-            <div className="border border-slate-200 rounded-xl p-4 mb-6 bg-slate-50 flex items-center justify-between gap-4">
+            {/* Platelet Toggle */}
+            <div className="border border-[var(--border)] rounded-xl p-3.5 mb-6 bg-[var(--surface)] flex items-center justify-between gap-4">
               <div>
-                <span className="font-bold text-xs text-slate-900 block">Single Donor Platelets (SDP / Apheresis)</span>
-                <span className="text-[11px] text-slate-500 block">Willing to be on-call for critical dengue/cancer platelet emergencies?</span>
+                <span className="font-bold text-xs text-[var(--text)] block">Single Donor Platelets (SDP)</span>
+                <span className="text-[11px] text-[var(--text-dim)] block">Willing to be on-call for emergency dengue/cancer platelet requests?</span>
               </div>
               <input
                 type="checkbox"
                 checked={willingPlatelets}
                 onChange={(e) => setWillingPlatelets(e.target.checked)}
-                className="w-5 h-5 accent-rose-600 rounded-sm cursor-pointer"
+                className="w-4 h-4 accent-[var(--accent)] rounded-sm cursor-pointer"
               />
             </div>
 
@@ -385,34 +322,29 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 rounded-xl text-sm transition"
+                className="w-1/3 py-2.5 rounded-full bg-[var(--surface)] text-[var(--text)] font-semibold text-xs border border-[var(--border)]"
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="w-2/3 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm shadow-md transition"
+                className="w-2/3 py-2.5 rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
               >
-                <span>Proceed to NBTC Screener</span>
+                <span>Health Screening</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 3: NBTC Clinical Health Checklist */}
+        {/* STEP 3: NBTC Screener */}
         {step === 3 && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
-                3
-              </div>
-              <div>
-                <h2 className="font-extrabold text-lg text-slate-900">NBTC Health &amp; Safety Screener</h2>
-                <p className="text-xs text-slate-500">Government clinical eligibility questionnaire</p>
-              </div>
-            </div>
+          <div className="bg-white border border-[var(--border-strong)] rounded-2xl p-6 sm:p-8 shadow-[var(--shadow-card)]">
+            <h2 className="text-lg font-bold text-[var(--text)] mb-1">Health Screening</h2>
+            <p className="text-xs text-[var(--text-dim)] mb-5">
+              Standard National Blood Transfusion Council (NBTC) safety questionnaire.
+            </p>
 
             <div className="mb-6">
               <HealthChecklist
@@ -428,7 +360,7 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 rounded-xl text-sm transition"
+                className="w-1/3 py-2.5 rounded-full bg-[var(--surface)] text-[var(--text)] font-semibold text-xs border border-[var(--border)]"
               >
                 Back
               </button>
@@ -436,110 +368,110 @@ export default function RegisterPage() {
                 type="button"
                 disabled={!healthPassed}
                 onClick={handleCompleteRegistration}
-                className="w-2/3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm shadow-md transition"
+                className="w-2/3 py-2.5 rounded-full bg-[var(--good)] hover:opacity-90 disabled:bg-slate-200 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Complete Registration &amp; Get Pass</span>
+                <span>Complete &amp; Generate Pass</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 4: Digital V2V-PASS Confirmation */}
+        {/* STEP 4: Minimalist Digital Donor Card */}
         {step === 4 && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-md text-center">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-8 h-8" />
+          <div className="bg-white border border-[var(--border-strong)] rounded-2xl p-6 sm:p-8 shadow-[var(--shadow-card)] text-center">
+            <div className="w-12 h-12 rounded-full bg-[var(--good-wash)] text-[var(--good)] flex items-center justify-center mx-auto mb-3">
+              <CheckCircle2 className="w-7 h-7" />
             </div>
 
-            <h2 className="text-2xl font-black text-slate-900 mb-1">
-              Registration Successful!
+            <h2 className="text-xl font-bold text-[var(--text)] mb-1">
+              Registration Successful
             </h2>
-            <p className="text-xs text-slate-500 max-w-md mx-auto mb-6">
-              You are now an active V2V Lifesaver. Below is your official digital donor pass and identification credential.
+            <p className="text-xs text-[var(--text-dim)] max-w-sm mx-auto mb-6">
+              You are now an active volunteer. Below is your official RaktKhoj donor identification card.
             </p>
 
-            {/* The V2V Digital Badge */}
-            <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-rose-950 text-white rounded-2xl p-6 shadow-xl max-w-sm mx-auto mb-6 border border-white/20 relative overflow-hidden text-left">
-              <div className="flex items-center justify-between mb-4">
+            {/* Clean Minimalist Digital Card */}
+            <div className="bg-[var(--surface)] border border-[var(--border-strong)] rounded-2xl p-5 max-w-sm mx-auto mb-6 text-left shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--border)] mb-3">
                 <div className="flex items-center gap-2">
-                  <Droplet className="w-5 h-5 text-rose-500 fill-rose-500" />
-                  <span className="font-black text-lg tracking-tight">V2V PASS</span>
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[var(--accent)] text-white">
+                    <Droplet className="w-3.5 h-3.5 fill-white" />
+                  </span>
+                  <span className="font-extrabold text-sm tracking-tight text-[var(--text)]">RaktKhoj Pass</span>
                 </div>
-                <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  VERIFIED DONOR
+                <span className="text-[10px] font-bold text-[var(--good)] bg-[var(--good-wash)] px-2 py-0.5 rounded-full">
+                  Verified Donor
                 </span>
               </div>
 
-              <div className="mb-4">
-                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Donor Name</span>
-                <span className="text-base font-bold text-white block">{name}</span>
+              <div className="mb-3">
+                <span className="text-[10px] text-[var(--text-faint)] font-bold block">Donor Name</span>
+                <span className="text-sm font-bold text-[var(--text)] block">{name}</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-2 gap-3 mb-3">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Blood Group</span>
-                  <span className="text-xl font-black text-amber-300">{selectedBgMeta.label}</span>
+                  <span className="text-[10px] text-[var(--text-faint)] font-bold block">Blood Group</span>
+                  <span className="text-lg font-black text-[var(--accent)]">{selectedBgMeta.label}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Donor ID</span>
-                  <span className="text-xs font-mono font-bold text-slate-200">{generatedDonorId}</span>
+                  <span className="text-[10px] text-[var(--text-faint)] font-bold block">Donor ID</span>
+                  <span className="text-xs font-mono font-bold text-[var(--text)]">{generatedDonorId}</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-white/10">
+              <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
                 <div>
-                  <span className="text-[10px] text-slate-400 block">District</span>
-                  <span className="text-xs font-semibold text-slate-300">{district}, {state}</span>
+                  <span className="text-[10px] text-[var(--text-faint)] block">District</span>
+                  <span className="text-xs font-medium text-[var(--text)]">{district}</span>
                 </div>
 
-                <div className="bg-white p-1 rounded-lg">
+                <div className="bg-white p-1 rounded-md border border-[var(--border)]">
                   <DynamicQrCode
-                    value={`https://v2v.health/donor/${generatedDonorId}`}
-                    size={48}
+                    value={`https://raktkhoj.org/donor/${generatedDonorId}`}
+                    size={42}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Next Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-2 justify-center max-w-sm mx-auto">
               <button
                 onClick={() => {
                   navigator.clipboard?.writeText(generatedDonorId);
                   setIsCopied(true);
                   setTimeout(() => setIsCopied(false), 2000);
                 }}
-                className="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-center gap-1.5"
+                className="py-2 px-4 rounded-full bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text)] text-xs font-semibold border border-[var(--border)]"
               >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>{isCopied ? "Donor ID Copied!" : "Copy Donor ID"}</span>
+                {isCopied ? "Donor ID Copied!" : "Copy Donor ID"}
               </button>
-
               <Link
                 href="/directory"
-                className="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
+                className="py-2 px-4 rounded-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-xs font-bold"
               >
-                <span>View Blood Directory</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                Browse Directory
               </Link>
             </div>
           </div>
         )}
       </main>
 
-      {/* 5. Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-8 px-4 text-xs mt-12 border-t border-slate-800">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-white font-bold text-sm">V2V Emergency Blood Network</p>
-            <p className="text-slate-500 mt-0.5">Aligned with e-RaktKosh and NBTC Clinical Blood Banking Standards</p>
+      {/* 4. Minimal Footer */}
+      <footer className="bg-white border-t border-[var(--border)] py-8 px-4 text-xs text-[var(--text-dim)]">
+        <div className="max-w-[1000px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[var(--accent)] text-white">
+              <Droplet className="h-3.5 w-3.5 fill-white" />
+            </span>
+            <span className="font-bold text-[var(--text)]">RaktKhoj</span>
+            <span>• Voluntary Donor Network</span>
           </div>
           <div className="flex gap-4">
-            <Link href="/" className="hover:text-white transition">Home</Link>
-            <Link href="/directory" className="hover:text-white transition">Directory</Link>
-            <Link href="/register" className="hover:text-white transition">Register Donor</Link>
-            <Link href="/camps" className="hover:text-white transition">Camps</Link>
+            <Link href="/" className="hover:text-[var(--text)] transition">Home</Link>
+            <Link href="/directory" className="hover:text-[var(--text)] transition">Directory</Link>
+            <Link href="/camps" className="hover:text-[var(--text)] transition">Camps</Link>
           </div>
         </div>
       </footer>

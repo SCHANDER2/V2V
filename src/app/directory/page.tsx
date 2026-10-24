@@ -11,15 +11,10 @@ import {
   ShieldCheck,
   AlertCircle,
   ExternalLink,
-  Filter,
   Droplet,
-  Compass,
   ArrowRight,
-  Activity,
-  CheckCircle2,
-  Share2,
-  Calendar,
-  Heart
+  ChevronRight,
+  Filter
 } from "lucide-react";
 import SidecarPill from "@/components/SidecarPill";
 
@@ -312,8 +307,7 @@ const BLOOD_GROUPS = [
   { key: "B_NEG", label: "B-" },
   { key: "AB_POS", label: "AB+" },
   { key: "AB_NEG", label: "AB-" },
-  { key: "SDP", label: "Platelets (SDP)" },
-  { key: "BOMBAY_OH", label: "Bombay (hh)" }
+  { key: "SDP", label: "Platelets (SDP)" }
 ];
 
 const DISTRICT_LIST = [
@@ -327,12 +321,11 @@ const DISTRICT_LIST = [
   "Noida"
 ];
 
-// Reference User Location (e.g. Connaught Place / Central Delhi)
 const USER_REF_LAT = 28.6139;
 const USER_REF_LNG = 77.2090;
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // km
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -353,14 +346,12 @@ export default function DirectoryPage() {
   const [only24x7, setOnly24x7] = useState(false);
   const [onlyInStock, setOnlyInStock] = useState(false);
 
-  // Filtered Blood Banks
   const filteredBanks = useMemo(() => {
     return EXTENDED_BLOOD_BANKS.map((bank) => {
       const dist = calculateDistance(USER_REF_LAT, USER_REF_LNG, bank.latitude, bank.longitude);
       return { ...bank, calculatedDistance: dist };
     })
       .filter((bank) => {
-        // Query match
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
           const matches =
@@ -370,22 +361,18 @@ export default function DirectoryPage() {
           if (!matches) return false;
         }
 
-        // District match
         if (selectedDistrict !== "All Districts" && bank.district !== selectedDistrict) {
           return false;
         }
 
-        // Radius match
         if (bank.calculatedDistance > maxRadiusKm) {
           return false;
         }
 
-        // 24x7 match
         if (only24x7 && bank.status !== "OPEN 24x7") {
           return false;
         }
 
-        // Stock match
         if (selectedGroup !== "ALL") {
           const units = bank.stock[selectedGroup] || 0;
           if (onlyInStock && units <= 0) return false;
@@ -407,117 +394,86 @@ export default function DirectoryPage() {
   }, [filteredBanks, selectedGroup]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-rose-500 selection:text-white">
-      {/* 1. Indian Emergency Top Bar */}
-      <header className="bg-gradient-to-r from-rose-800 via-red-800 to-rose-900 text-white text-xs sm:text-sm font-medium py-2 px-4 shadow-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-200 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+    <div className="min-h-screen bg-white text-[var(--text)] flex flex-col font-sans selection:bg-[var(--accent)] selection:text-white">
+      {/* 1. Minimal Header (RaktKhoj Style) */}
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
+        <div className="max-w-[1200px] mx-auto flex h-[68px] items-center justify-between px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[var(--accent)] text-white shadow-xs group-hover:scale-105 transition-transform">
+              <Droplet className="h-5 w-5 fill-white" />
             </span>
-            <span className="font-semibold tracking-wide flex items-center gap-1.5">
-              <span>🇮🇳</span>
-              <span>National Blood Directory • e-RaktKosh Verified Centres</span>
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3 text-xs">
-            <a
-              href="tel:104"
-              className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full font-bold inline-flex items-center gap-1.5 transition border border-white/30"
-            >
-              <PhoneCall className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-              <span>National Blood Helpline: 104 (24x7)</span>
-            </a>
-          </div>
-        </div>
-      </header>
-
-      {/* 2. Main Navigation Bar */}
-      <nav className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-[37px] z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-600 to-red-700 flex items-center justify-center text-white shadow-md shadow-rose-600/25 group-hover:scale-105 transition-transform">
-              <Droplet className="w-5 h-5 fill-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-2xl tracking-tight text-slate-900">
-                  V<span className="text-rose-600">2</span>V
-                </span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 uppercase tracking-wider border border-rose-200">
-                  Directory
-                </span>
-              </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-xl tracking-tight text-[var(--text)]">
+                RaktKhoj
+              </span>
+              <span className="text-[10px] text-[var(--text-dim)] font-medium -mt-1 hidden sm:block">
+                Directory
+              </span>
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-700">
-            <Link href="/" className="hover:text-rose-600 transition">
+          <nav className="hidden md:flex items-center gap-7 text-[13.5px] font-semibold text-[var(--text-dim)]">
+            <Link href="/" className="hover:text-[var(--accent)] transition">
               Home
             </Link>
-            <Link href="/directory" className="text-rose-600 font-bold border-b-2 border-rose-600 pb-0.5">
-              Blood Bank Directory
+            <Link href="/directory" className="text-[var(--accent)] font-bold">
+              Blood Banks
             </Link>
-            <Link href="/register" className="hover:text-rose-600 transition">
-              Register as Donor
+            <Link href="/register" className="hover:text-[var(--accent)] transition">
+              Become a Donor
             </Link>
-            <Link href="/camps" className="hover:text-rose-600 transition">
+            <Link href="/camps" className="hover:text-[var(--accent)] transition">
               Donation Camps
             </Link>
-          </div>
+          </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3">
             <SidecarPill compact />
             <Link
               href="/request/new"
-              className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md shadow-rose-600/25 flex items-center gap-2 text-xs sm:text-sm transition hover:scale-[1.02]"
+              className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold px-4 py-2 rounded-full text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition-all"
             >
-              <AlertCircle className="w-4 h-4 animate-bounce" />
+              <AlertCircle className="w-3.5 h-3.5" />
               <span>Emergency SOS</span>
             </Link>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* 3. Hero Header & Search Controls */}
-      <section className="bg-gradient-to-b from-slate-900 via-rose-950 to-slate-900 text-white py-10 px-4">
-        <div className="max-w-6xl mx-auto">
+      {/* 2. Directory Hero & Filter Bar */}
+      <section className="bg-[var(--surface)] border-b border-[var(--border)] py-10 px-4">
+        <div className="max-w-[1000px] mx-auto">
           <div className="text-center mb-8">
-            <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1 rounded-full text-xs font-semibold text-rose-200 border border-white/15 mb-3">
-              <Building2 className="w-3.5 h-3.5 text-amber-300" />
-              <span>Real-Time Government &amp; Hospital Stock Availability</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent)] block mb-1">
+              Live e-RaktKosh Directory
             </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-3">
-              Live Blood Bank Directory
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text)] mb-2">
+              Find Blood Banks Near You
             </h1>
-            <p className="text-rose-200 text-sm sm:text-base max-w-2xl mx-auto">
-              Find licensed blood centres, verify real-time component availability, and initiate instant V2V emergency dispatch.
+            <p className="text-xs sm:text-sm text-[var(--text-dim)] max-w-lg mx-auto">
+              Real-time component inventory across licensed hospital blood centres. Sorted by proximity.
             </p>
           </div>
 
-          {/* Search Box & Primary Filter Grid */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 sm:p-6 rounded-2xl shadow-xl max-w-4xl mx-auto">
+          {/* Minimal Filter Widget */}
+          <div className="bg-white border border-[var(--border-strong)] rounded-2xl p-4 sm:p-5 shadow-[var(--shadow-card)]">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-              {/* Search text */}
               <div className="relative md:col-span-2">
-                <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search hospital, blood bank, or locality..."
+                  placeholder="Search blood bank, hospital, or locality..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-white text-slate-900 rounded-xl text-sm font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-amber-400 shadow-inner"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[var(--surface)] text-[var(--text)] rounded-xl text-xs sm:text-sm font-medium placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[var(--accent)] border border-[var(--border)]"
                 />
               </div>
 
-              {/* District Select */}
               <div>
                 <select
                   value={selectedDistrict}
                   onChange={(e) => setSelectedDistrict(e.target.value)}
-                  className="w-full py-3 px-3.5 bg-white text-slate-900 rounded-xl text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+                  className="w-full py-2.5 px-3 bg-[var(--surface)] text-[var(--text)] rounded-xl text-xs sm:text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-[var(--accent)] border border-[var(--border)]"
                 >
                   {DISTRICT_LIST.map((d) => (
                     <option key={d} value={d}>
@@ -528,20 +484,21 @@ export default function DirectoryPage() {
               </div>
             </div>
 
-            {/* Blood Group Select Chips */}
+            {/* Blood group chips */}
             <div className="mb-4">
-              <span className="text-xs font-bold text-rose-200 uppercase tracking-wider block mb-2">
-                Select Blood Group or Component:
+              <span className="text-[11px] font-bold text-[var(--text-faint)] uppercase tracking-wider block mb-2">
+                Filter by Blood Group / Component:
               </span>
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {BLOOD_GROUPS.map((bg) => (
                   <button
                     key={bg.key}
+                    type="button"
                     onClick={() => setSelectedGroup(bg.key)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       selectedGroup === bg.key
-                        ? "bg-amber-400 text-slate-950 shadow-md scale-105"
-                        : "bg-white/15 text-white hover:bg-white/25"
+                        ? "bg-[var(--accent)] text-white shadow-xs scale-105"
+                        : "bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text)] border border-[var(--border)]"
                     }`}
                   >
                     {bg.label}
@@ -550,10 +507,10 @@ export default function DirectoryPage() {
               </div>
             </div>
 
-            {/* Secondary Controls: Radius Slider & Toggles */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-white/15 text-xs text-rose-100">
+            {/* Radius slider & toggles */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-[var(--border)] text-xs text-[var(--text-dim)]">
               <div className="flex items-center gap-3">
-                <span className="font-semibold">Search Radius:</span>
+                <span className="font-semibold">Radius:</span>
                 <input
                   type="range"
                   min="5"
@@ -561,28 +518,28 @@ export default function DirectoryPage() {
                   step="5"
                   value={maxRadiusKm}
                   onChange={(e) => setMaxRadiusKm(Number(e.target.value))}
-                  className="accent-amber-400 cursor-pointer w-28 sm:w-36"
+                  className="accent-[var(--accent)] cursor-pointer w-28 sm:w-36"
                 />
-                <span className="font-black text-amber-300">{maxRadiusKm} km</span>
+                <span className="font-bold text-[var(--accent)]">{maxRadiusKm} km</span>
               </div>
 
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-1.5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={only24x7}
                     onChange={(e) => setOnly24x7(e.target.checked)}
-                    className="rounded-sm accent-amber-400 h-4 w-4"
+                    className="accent-[var(--accent)] rounded-sm h-3.5 w-3.5"
                   />
                   <span>24x7 Only</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-1.5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={onlyInStock}
                     onChange={(e) => setOnlyInStock(e.target.checked)}
-                    className="rounded-sm accent-amber-400 h-4 w-4"
+                    className="accent-[var(--accent)] rounded-sm h-3.5 w-3.5"
                   />
                   <span>In Stock Only</span>
                 </label>
@@ -592,193 +549,131 @@ export default function DirectoryPage() {
         </div>
       </section>
 
-      {/* 4. Live Results Header Ribbon */}
-      <section className="max-w-6xl mx-auto px-4 py-6 w-full flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
+      {/* 3. Results Ribbon */}
+      <section className="max-w-[1000px] mx-auto px-4 py-5 w-full flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border)]">
         <div>
-          <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-            <span>Verified Centres Found:</span>
-            <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-sm font-black">
+          <h2 className="text-base font-extrabold text-[var(--text)] flex items-center gap-2">
+            <span>Verified Blood Centres:</span>
+            <span className="px-2 py-0.5 rounded-full bg-[var(--accent-wash)] text-[var(--accent)] text-xs font-black">
               {filteredBanks.length}
             </span>
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Showing results within {maxRadiusKm} km • Sorted by shortest transit distance
+          <p className="text-[11px] text-[var(--text-faint)] mt-0.5">
+            Within {maxRadiusKm} km of Central Delhi • Live inventory availability
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-            <span>Total Units ({selectedGroup}): {totalUnitsAvailable}</span>
+        <div className="flex items-center gap-2.5">
+          <div className="bg-[var(--good-wash)] text-[var(--good)] px-3 py-1 rounded-full text-xs font-bold">
+            Total Units Available: {totalUnitsAvailable}
           </div>
-
           <Link
             href="/request/new"
-            className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition"
+            className="text-xs font-bold text-[var(--accent)] hover:underline flex items-center gap-1"
           >
-            <AlertCircle className="w-3.5 h-3.5" />
-            <span>Cannot find? Launch SOS</span>
+            <span>Need emergency blood?</span>
+            <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </section>
 
-      {/* 5. Directory Cards Grid */}
-      <main className="max-w-6xl mx-auto px-4 py-8 w-full flex-1">
+      {/* 4. Directory Grid */}
+      <main className="max-w-[1000px] mx-auto px-4 py-8 w-full flex-1">
         {filteredBanks.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center max-w-lg mx-auto shadow-sm">
-            <div className="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
-              <Search className="w-7 h-7" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">No Matching Blood Centres</h3>
-            <p className="text-sm text-slate-600 mb-6">
-              We couldn&apos;t find blood banks matching your current filters within {maxRadiusKm} km. Try expanding your search radius or trigger immediate community donor dispatch.
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-12 text-center max-w-md mx-auto">
+            <Building2 className="w-10 h-10 text-[var(--text-faint)] mx-auto mb-3" />
+            <h3 className="text-base font-bold text-[var(--text)] mb-1">No Matching Centres Found</h3>
+            <p className="text-xs text-[var(--text-dim)] mb-4">
+              Try increasing your radius or clearing blood group filters.
             </p>
-            <div className="flex justify-center gap-3">
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedGroup("ALL");
-                  setSelectedDistrict("All Districts");
-                  setMaxRadiusKm(50);
-                  setOnlyInStock(false);
-                }}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-xl text-xs transition"
-              >
-                Reset All Filters
-              </button>
-              <Link
-                href="/request/new"
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition"
-              >
-                Launch Emergency SOS
-              </Link>
-            </div>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedGroup("ALL");
+                setSelectedDistrict("All Districts");
+                setMaxRadiusKm(50);
+              }}
+              className="px-4 py-2 bg-[var(--accent)] text-white text-xs font-bold rounded-full"
+            >
+              Reset Filters
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredBanks.map((bank) => {
               const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${bank.latitude},${bank.longitude}`;
-              const targetUnits =
-                selectedGroup === "ALL"
-                  ? Object.values(bank.stock).reduce((s, v) => s + v, 0)
-                  : bank.stock[selectedGroup] || 0;
 
               return (
                 <div
                   key={bank.id}
-                  className="bg-white border border-slate-200 hover:border-rose-300 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                  className="bg-white border border-[var(--border)] rounded-2xl p-5 hover:border-[var(--accent-dim)] transition-all flex flex-col justify-between"
                 >
                   <div>
-                    {/* Header: Name, Distance & Category */}
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
-                            {bank.category}
-                          </span>
-                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {bank.status}
-                          </span>
-                          {bank.verified && (
-                            <span className="text-[11px] font-semibold text-rose-600 flex items-center gap-0.5">
-                              <ShieldCheck className="w-3.5 h-3.5" />
-                              e-RaktKosh
-                            </span>
-                          )}
-                        </div>
-
-                        <h3 className="font-bold text-base text-slate-900 leading-snug">
-                          {bank.name}
-                        </h3>
-                      </div>
-
-                      <div className="text-right shrink-0">
-                        <span className="text-xs font-black text-rose-600 bg-rose-50 px-2 py-1 rounded-lg border border-rose-200 inline-block">
-                          {bank.calculatedDistance} km
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[var(--surface)] text-[var(--text-dim)] border border-[var(--border)]">
+                          {bank.category}
                         </span>
-                        <span className="block text-[10px] text-slate-400 mt-0.5">from center</span>
+                        <span className="text-[10px] font-bold text-[var(--good)] bg-[var(--good-wash)] px-2 py-0.5 rounded-md">
+                          {bank.status}
+                        </span>
                       </div>
+                      <span className="text-xs font-extrabold text-[var(--accent)] shrink-0">
+                        {bank.calculatedDistance} km
+                      </span>
                     </div>
 
-                    {/* Address & Freshness */}
-                    <p className="text-xs text-slate-600 flex items-start gap-1.5 mb-3">
+                    <h3 className="font-bold text-sm sm:text-base text-[var(--text)] mb-1">
+                      {bank.name}
+                    </h3>
+                    <p className="text-xs text-[var(--text-dim)] flex items-start gap-1 mb-3">
                       <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                       <span>{bank.address}</span>
                     </p>
 
-                    <div className="text-[11px] text-slate-400 flex items-center gap-2 mb-4">
-                      <span>Updated {bank.updatedMinutesAgo}m ago</span>
-                      <span>•</span>
-                      <span>Contact: {bank.contactPhone}</span>
-                    </div>
-
-                    {/* Stock Matrix Display */}
-                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4">
-                      <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-2">
-                        <span className="flex items-center gap-1 text-slate-900">
-                          <Droplet className="w-3.5 h-3.5 text-rose-600 fill-rose-600" />
-                          <span>Component Stock:</span>
-                        </span>
-                        <span className="text-emerald-700 font-extrabold">
-                          {targetUnits} {selectedGroup === "ALL" ? "Total Units" : `${selectedGroup} Units`}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-5 gap-1.5 text-center">
-                        {["O_POS", "B_POS", "A_POS", "AB_POS", "SDP"].map((gKey) => {
-                          const units = bank.stock[gKey] || 0;
-                          const isTarget = selectedGroup === gKey;
-                          return (
-                            <div
-                              key={gKey}
-                              className={`p-1.5 rounded-lg border text-xs ${
-                                isTarget
-                                  ? "bg-amber-100 border-amber-300 font-black text-amber-950"
-                                  : units > 0
-                                  ? "bg-white border-slate-200 text-slate-800"
-                                  : "bg-slate-100/50 border-slate-100 text-slate-400"
-                              }`}
-                            >
-                              <span className="block text-[10px] font-bold text-slate-500">
-                                {gKey === "SDP" ? "SDP" : gKey.replace("_POS", "+").replace("_NEG", "-")}
-                              </span>
-                              <span className="font-extrabold text-xs">
-                                {units > 0 ? `${units}` : "0"}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
+                    {/* Stock Grid */}
+                    <div className="bg-[var(--surface)] rounded-xl p-2.5 mb-4 grid grid-cols-5 gap-1 text-center text-xs">
+                      {["O_POS", "B_POS", "A_POS", "AB_POS", "SDP"].map((gKey) => {
+                        const units = bank.stock[gKey] || 0;
+                        const isMatch = selectedGroup === gKey;
+                        return (
+                          <div
+                            key={gKey}
+                            className={`p-1 rounded-lg ${
+                              isMatch ? "bg-[var(--accent)] text-white" : ""
+                            }`}
+                          >
+                            <span className={`text-[10px] font-bold block ${isMatch ? "text-white/80" : "text-[var(--text-faint)]"}`}>
+                              {gKey === "SDP" ? "SDP" : gKey.replace("_POS", "+")}
+                            </span>
+                            <span className="font-black text-xs">{units}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-2 pt-2 border-t border-[var(--border)] text-xs">
                     <a
                       href={`tel:${bank.contactPhone}`}
-                      className="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                      className="flex-1 py-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text)] font-bold flex items-center justify-center gap-1.5 transition"
                     >
-                      <PhoneCall className="w-3.5 h-3.5 text-rose-600" />
+                      <PhoneCall className="w-3.5 h-3.5 text-[var(--accent)]" />
                       <span>Call</span>
                     </a>
-
                     <a
                       href={mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                      className="p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text)] transition"
                     >
-                      <ExternalLink className="w-3.5 h-3.5 text-slate-600" />
-                      <span>Directions</span>
+                      <ExternalLink className="w-4 h-4 text-slate-500" />
                     </a>
-
                     <Link
-                      href={`/request/new?hospital=${encodeURIComponent(bank.name)}&bloodGroup=${selectedGroup !== "ALL" ? selectedGroup : "O_POS"}`}
-                      className="py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs"
+                      href={`/request/new?hospital=${encodeURIComponent(bank.name)}`}
+                      className="flex-1 py-2 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold flex items-center justify-center gap-1.5 transition shadow-xs"
                     >
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      <span>V2V SOS</span>
+                      <span>Request SOS</span>
                     </Link>
                   </div>
                 </div>
@@ -788,19 +683,21 @@ export default function DirectoryPage() {
         )}
       </main>
 
-      {/* 6. Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-8 px-4 text-xs mt-12 border-t border-slate-800">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-white font-bold text-sm">V2V Emergency Blood Network</p>
-            <p className="text-slate-500 mt-0.5">Aligned with e-RaktKosh and NBTC Clinical Blood Banking Standards</p>
+      {/* 5. Minimal Footer */}
+      <footer className="bg-white border-t border-[var(--border)] py-8 px-4 text-xs text-[var(--text-dim)]">
+        <div className="max-w-[1000px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[var(--accent)] text-white">
+              <Droplet className="h-3.5 w-3.5 fill-white" />
+            </span>
+            <span className="font-bold text-[var(--text)]">RaktKhoj</span>
+            <span>• Verified Blood Directory</span>
           </div>
           <div className="flex gap-4">
-            <Link href="/" className="hover:text-white transition">Home</Link>
-            <Link href="/directory" className="hover:text-white transition">Directory</Link>
-            <Link href="/register" className="hover:text-white transition">Register Donor</Link>
-            <Link href="/camps" className="hover:text-white transition">Camps</Link>
-            <Link href="/admin/simulator" className="hover:text-white transition">Control Room</Link>
+            <Link href="/" className="hover:text-[var(--text)] transition">Home</Link>
+            <Link href="/directory" className="hover:text-[var(--text)] transition">Directory</Link>
+            <Link href="/register" className="hover:text-[var(--text)] transition">Donor Registry</Link>
+            <Link href="/camps" className="hover:text-[var(--text)] transition">Camps</Link>
           </div>
         </div>
       </footer>
