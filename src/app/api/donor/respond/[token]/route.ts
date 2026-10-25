@@ -1,6 +1,7 @@
 // src/app/api/donor/respond/[token]/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma, { withDbRetry } from "@/lib/prisma";
+import cache from "@/lib/cache";
 import { LeaseStatus } from "@/types/enums";
 import { SIDECAR_VIEWER_URL } from "@/lib/shortHash";
 
@@ -49,6 +50,16 @@ export async function GET(
 ) {
   try {
     const { token } = params;
+
+    // Cache lookup for 15k concurrent donor pings
+    const cacheKey = `donor_token_${token}`;
+    const cached = cache.get<any>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { "X-V2V-Cache": "HIT" },
+      });
+    }
+
     const resolved = resolveToken(token);
 
     if (!resolved) {
@@ -60,9 +71,11 @@ export async function GET(
 
     const { requestId, donorId } = resolved;
 
-    const request = await prisma.emergencyRequest.findUnique({
-      where: { id: requestId },
-    });
+    const request = await withDbRetry(() =>
+      prisma.emergencyRequest.findUnique({
+        where: { id: requestId },
+      })
+    );
 
     if (!request) {
       return NextResponse.json(
@@ -71,9 +84,11 @@ export async function GET(
       );
     }
 
-    const donor = await prisma.donor.findUnique({
-      where: { id: donorId },
-    });
+    const donor = await withDbRetry(() =>
+      prisma.donor.findUnique({
+        where: { id: donorId },
+      })
+    );
 
     if (!donor) {
       return NextResponse.json(
@@ -83,23 +98,27 @@ export async function GET(
     }
 
     // Fetch existing lease for this donor on this request, if any
-    const existingLease = await prisma.donorLease.findFirst({
-      where: { requestId, donorId },
-      orderBy: { createdAt: "desc" },
-    });
+    const existingLease = await withDbRetry(() =>
+      prisma.donorLease.findFirst({
+        where: { requestId, donorId },
+        orderBy: { createdAt: "desc" },
+      })
+    );
 
     // Count currently active leases (JIT_PASSED, EN_ROUTE, ARRIVED)
-    const activeCount = await prisma.donorLease.count({
-      where: {
-        requestId,
-        status: { in: [LeaseStatus.JIT_PASSED, LeaseStatus.EN_ROUTE, LeaseStatus.ARRIVED] },
-      },
-    });
+    const activeCount = await withDbRetry(() =>
+      prisma.donorLease.count({
+        where: {
+          requestId,
+          status: { in: [LeaseStatus.JIT_PASSED, LeaseStatus.EN_ROUTE, LeaseStatus.ARRIVED] },
+        },
+      })
+    );
 
     const targetSlots = request.unitsNeeded + 1; // N+1 Token Bucket
     const isSaturated = activeCount >= targetSlots;
 
-    return NextResponse.json({
+    const payload = {
       success: true,
       token,
       request: {
@@ -135,6 +154,13 @@ export async function GET(
       activeCount,
       isSaturated,
       sidecarUrl: SIDECAR_VIEWER_URL,
+    };
+
+    // Cache for 2.5 seconds
+    cache.set(cacheKey, payload, 2500);
+
+    return NextResponse.json(payload, {
+      headers: { "X-V2V-Cache": "MISS" },
     });
   } catch (error: any) {
     console.error("Error in GET /api/donor/respond/[token]:", error);

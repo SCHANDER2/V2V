@@ -1,6 +1,7 @@
 // src/app/api/simulator/trigger-wave/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { invalidateRequestCache } from "@/lib/cache";
 import { dispatchWave } from "@/lib/engines/dispatcher";
 import { WaveState } from "@/types/enums";
 
@@ -83,6 +84,11 @@ export async function POST(req: Request) {
       `[RADIUS_EXPANSION] Radius evaluated: ${waveRadius}`,
       `[PING_DONORS] Dispatched pings to ${result.pingedDonorsCount} eligible donors`,
     ];
+
+    invalidateRequestCache(requestId);
+    if (request.shortHash) {
+      invalidateRequestCache(request.shortHash);
+    }
 
     return NextResponse.json({
       success: true,

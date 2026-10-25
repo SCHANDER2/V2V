@@ -8,6 +8,9 @@ import { PhoneCall, ArrowLeft, Droplet, ShieldCheck } from "lucide-react";
 import WaveRadar from "@/components/WaveRadar";
 import DonorRoster, { ActiveLease, StandbyLease } from "@/components/DonorRoster";
 import SidecarPill from "@/components/SidecarPill";
+import WhatsAppShareButton from "@/components/WhatsAppShareButton";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/context/LanguageContext";
 import { WaveState } from "@/types/enums";
 
 interface EmergencyRequestData {
@@ -185,9 +188,20 @@ export default function FamilyCommandCenterPage({
             </p>
           </div>
 
-          {/* Interactive Sidecar Pill per Science Visualization Priority Rules */}
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          {/* Interactive Sidecar Pill & Indian Direct WhatsApp Share */}
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <LanguageSwitcher className="bg-slate-100" />
             <SidecarPill compact />
+            <WhatsAppShareButton
+              hospitalName={request.hospitalName}
+              patientName={request.patientName}
+              patientUhid={request.patientUhid}
+              bloodGroup={request.bloodGroup}
+              component={request.component}
+              unitsNeeded={request.unitsNeeded}
+              trackingUrl={request.trackingUrl || `/r/${request.shortHash}`}
+              size="sm"
+            />
             <button
               onClick={handleCopyLink}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-2xs transition"

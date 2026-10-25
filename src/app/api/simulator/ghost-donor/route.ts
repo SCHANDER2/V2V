@@ -1,6 +1,7 @@
 // src/app/api/simulator/ghost-donor/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { invalidateRequestCache, invalidateDonorCache } from "@/lib/cache";
 import { evictExpiredLeases } from "@/lib/engines/lease-manager";
 import { LeaseStatus } from "@/types/enums";
 
@@ -70,6 +71,12 @@ export async function POST(req: Request) {
         ? `[PROMOTION] Promoted ${evictionSummary.promotedCount} standby lease(s) to JIT_PASSED: [${evictionSummary.promotedLeaseIds.join(", ")}]`
         : `[STANDBY_BUFFER] No standby donors currently queued for promotion`,
     ];
+
+    invalidateRequestCache(lease.requestId);
+    if (lease.request?.shortHash) {
+      invalidateRequestCache(lease.request.shortHash);
+    }
+    invalidateDonorCache(lease.donorId);
 
     return NextResponse.json({
       success: true,

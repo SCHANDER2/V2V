@@ -1,6 +1,7 @@
 // src/app/api/lease/update-eta/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma, { withDbRetry } from "@/lib/prisma";
+import { invalidateRequestCache, invalidateDonorCache } from "@/lib/cache";
 import { LeaseStatus } from "@/types/enums";
 
 export async function POST(req: Request) {
@@ -47,12 +48,17 @@ export async function POST(req: Request) {
         ? LeaseStatus.EN_ROUTE
         : lease.status;
 
-    const updated = await prisma.donorLease.update({
-      where: { id: leaseId },
-      data: {
-        status: newStatus,
-      },
-    });
+    const updated = await withDbRetry(() =>
+      prisma.donorLease.update({
+        where: { id: leaseId },
+        data: {
+          status: newStatus,
+        },
+      })
+    );
+
+    invalidateRequestCache(lease.requestId);
+    invalidateDonorCache(lease.donorId);
 
     return NextResponse.json({
       success: true,

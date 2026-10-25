@@ -35,6 +35,8 @@ next-env.d.ts
 
 # SQLite / Local DB
 prisma/*.db-journal
+prisma/*.db-shm
+prisma/*.db-wal
 *.sqlite
 
 # Internal agents & transcripts

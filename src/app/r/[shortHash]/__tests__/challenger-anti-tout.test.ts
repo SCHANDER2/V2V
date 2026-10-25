@@ -88,11 +88,18 @@ describe("Empirical Challenger M3-1: UI State Machine, Counter-Loop 4 & Dead-Man
 
   beforeAll(async () => {
     // Locate seeded records for API verification
-    seededFulfilledReq = await prisma.emergencyRequest.findFirst({
-      where: { waveState: WaveState.FULFILLED_CLOSED },
+    seededFulfilledReq = await prisma.emergencyRequest.findUnique({
+      where: { shortHash: "v2v_fn_aiims" },
     });
-    seededExpiredReq = await prisma.emergencyRequest.findFirst({
-      where: { waveState: WaveState.EXPIRED },
+    if (!seededFulfilledReq) {
+      const { main } = await import("../../../../../prisma/seed");
+      await main();
+      seededFulfilledReq = await prisma.emergencyRequest.findUnique({
+        where: { shortHash: "v2v_fn_aiims" },
+      });
+    }
+    seededExpiredReq = await prisma.emergencyRequest.findUnique({
+      where: { shortHash: "v2v_ex_aiims" },
     });
     seededActiveDonor = await prisma.donor.findFirst();
   });

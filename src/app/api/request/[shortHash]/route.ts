@@ -1,6 +1,7 @@
 // src/app/api/request/[shortHash]/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma, { withDbRetry } from "@/lib/prisma";
+import cache from "@/lib/cache";
 import { isShortHashExpired, formatTrackingUrl, SIDECAR_VIEWER_URL } from "@/lib/shortHash";
 import { LeaseStatus, WaveState } from "@/types/enums";
 
@@ -35,17 +36,30 @@ export async function GET(
       );
     }
 
-    const request = await prisma.emergencyRequest.findUnique({
-      where: { shortHash },
-      include: {
-        leases: {
-          include: {
-            donor: true,
-          },
-          orderBy: { createdAt: "asc" },
+    // 1. High-speed In-Memory Cache Lookup (protects DB under 15,000 concurrent users)
+    const cacheKey = `req_${shortHash}`;
+    const cached = cache.get<any>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          "X-V2V-Cache": "HIT",
         },
-      },
-    });
+      });
+    }
+
+    const request = await withDbRetry(() =>
+      prisma.emergencyRequest.findUnique({
+        where: { shortHash },
+        include: {
+          leases: {
+            include: {
+              donor: true,
+            },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      })
+    );
 
     if (!request) {
       return NextResponse.json(
@@ -119,7 +133,7 @@ export async function GET(
       effectiveWaveState === WaveState.FULFILLED_CLOSED ||
       effectiveWaveState === WaveState.EXPIRED;
 
-    return NextResponse.json({
+    const responsePayload = {
       request: {
         id: request.id,
         patientName: request.patientName,
@@ -142,6 +156,16 @@ export async function GET(
       activeLeases,
       standbyLeases,
       pingCount,
+    };
+
+    // Cache TTL: 10s for final states (CLOSED/EXPIRED), 2.5s for active dispatch states
+    const cacheTtlMs = isFinalState ? 10000 : 2500;
+    cache.set(cacheKey, responsePayload, cacheTtlMs);
+
+    return NextResponse.json(responsePayload, {
+      headers: {
+        "X-V2V-Cache": "MISS",
+      },
     });
   } catch (error: any) {
     console.error("Error in GET /api/request/[shortHash]:", error);

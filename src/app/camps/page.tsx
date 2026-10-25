@@ -17,6 +17,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import SidecarPill from "@/components/SidecarPill";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 interface DonationCamp {
   id: string;
@@ -181,7 +182,7 @@ export default function CampsPage() {
 
   return (
     <div className="min-h-screen bg-white text-[var(--text)] flex flex-col font-sans selection:bg-[var(--accent)] selection:text-white">
-      {/* 1. Minimal Header (RaktKhoj Style) */}
+      {/* 1. Minimal Header (V2V Life Flow Network) */}
       <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
         <div className="max-w-[1200px] mx-auto flex h-[68px] items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -190,10 +191,10 @@ export default function CampsPage() {
             </span>
             <div className="flex flex-col">
               <span className="font-extrabold text-xl tracking-tight text-[var(--text)]">
-                RaktKhoj
+                V2V
               </span>
               <span className="text-[10px] text-[var(--text-dim)] font-medium -mt-1 hidden sm:block">
-                Donation Camps
+                Life Flow Network
               </span>
             </div>
           </Link>
@@ -214,6 +215,7 @@ export default function CampsPage() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <SidecarPill compact />
             <Link
               href="/request/new"
@@ -476,8 +478,8 @@ export default function CampsPage() {
               <Droplet className="h-4 w-4 fill-white" />
             </span>
             <div>
-              <span className="font-extrabold text-white text-base tracking-tight">raktkhoj<span className="text-[#e8394c]">.</span></span>
-              <p className="text-gray-400 text-[11px]">Authorized Blood Donation Drives &bull; 24x7 Helpline: 104 / 1075</p>
+              <span className="font-extrabold text-white text-base tracking-tight">v2v<span className="text-[#e8394c]">.</span></span>
+              <p className="text-gray-400 text-[11px]">V2V - Life Flow Network &bull; 24x7 Helpline: 104 / 1075</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-6 text-gray-300 font-semibold">

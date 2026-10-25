@@ -1,6 +1,7 @@
 // src/app/api/lease/arrive/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma, { withDbRetry } from "@/lib/prisma";
+import { invalidateRequestCache, invalidateDonorCache } from "@/lib/cache";
 import { LeaseStatus } from "@/types/enums";
 
 export async function POST(req: Request) {
@@ -50,12 +51,21 @@ export async function POST(req: Request) {
     }
 
     // Transition lease to ARRIVED (freezes eviction timer)
-    const updated = await prisma.donorLease.update({
-      where: { id: leaseId },
-      data: {
-        status: LeaseStatus.ARRIVED,
-      },
-    });
+    const updated = await withDbRetry(() =>
+      prisma.donorLease.update({
+        where: { id: leaseId },
+        data: {
+          status: LeaseStatus.ARRIVED,
+        },
+      })
+    );
+
+    // Invalidate request and donor caches for real-time consistency
+    if (lease.request?.shortHash) {
+      invalidateRequestCache(lease.request.shortHash);
+    }
+    invalidateRequestCache(lease.requestId);
+    invalidateDonorCache(lease.donorId);
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,7 @@
 // src/app/api/request/create/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma, { withDbRetry } from "@/lib/prisma";
+import { rateLimiter, rateLimitResponse } from "@/lib/rateLimit";
 import {
   generateShortHash,
   calculateShortHashExpiry,
@@ -25,6 +26,12 @@ interface CreateRequestBody {
 
 export async function POST(req: Request) {
   try {
+    // 1. Rate Limiting Protection (25 requests/min per IP)
+    const rl = rateLimiter.check(req, { keyPrefix: "rl:request_create", limit: 25 });
+    if (!rl.allowed) {
+      return rateLimitResponse(rl);
+    }
+
     const body: CreateRequestBody = await req.json();
 
     const patientName = body.patientName?.trim();
@@ -75,11 +82,15 @@ export async function POST(req: Request) {
 
     // Generate unique shortHash with collision resilience
     let shortHash = generateShortHash();
-    let collisionCheck = await prisma.emergencyRequest.findUnique({ where: { shortHash } });
+    let collisionCheck = await withDbRetry(() =>
+      prisma.emergencyRequest.findUnique({ where: { shortHash } })
+    );
     let retries = 0;
     while (collisionCheck && retries < 3) {
       shortHash = generateShortHash();
-      collisionCheck = await prisma.emergencyRequest.findUnique({ where: { shortHash } });
+      collisionCheck = await withDbRetry(() =>
+        prisma.emergencyRequest.findUnique({ where: { shortHash } })
+      );
       retries++;
     }
 
@@ -87,22 +98,24 @@ export async function POST(req: Request) {
     const expiresAt = calculateShortHashExpiry(12);
 
     // Create EmergencyRequest in database
-    const request = await prisma.emergencyRequest.create({
-      data: {
-        patientName: patientName!,
-        patientUhid: patientUhid!,
-        hospitalName: hospitalName!,
-        hospitalLat,
-        hospitalLng,
-        component: component!,
-        bloodGroup,
-        requestMode,
-        unitsNeeded,
-        waveState: WaveState.PENDING_VERIFICATION,
-        shortHash,
-        expiresAt,
-      },
-    });
+    const request = await withDbRetry(() =>
+      prisma.emergencyRequest.create({
+        data: {
+          patientName: patientName!,
+          patientUhid: patientUhid!,
+          hospitalName: hospitalName!,
+          hospitalLat,
+          hospitalLng,
+          component: component!,
+          bloodGroup,
+          requestMode,
+          unitsNeeded,
+          waveState: WaveState.PENDING_VERIFICATION,
+          shortHash,
+          expiresAt,
+        },
+      })
+    );
 
     return NextResponse.json(
       {

@@ -13,6 +13,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { evictExpiredLeases, EvictionResult } from "@/lib/engines/lease-manager";
+import cache from "@/lib/cache";
 
 // Next.js Route Segment Configuration
 export const dynamic = "force-dynamic";
@@ -104,6 +105,10 @@ export async function GET(request: NextRequest): Promise<NextResponse<LeaseWatch
     console.log(
       `[LeaseWatchdog] Execution completed successfully in ${executionTimeMs}ms (evicted: ${summary.evictedCount}, promoted: ${summary.promotedCount})`
     );
+
+    if (summary.evictedCount > 0 || summary.promotedCount > 0) {
+      cache.clear();
+    }
 
     return NextResponse.json(
       {

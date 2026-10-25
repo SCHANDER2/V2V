@@ -22,6 +22,8 @@ import {
 import SidecarPill from "@/components/SidecarPill";
 import HealthChecklist from "@/components/HealthChecklist";
 import DynamicQrCode from "@/components/DynamicQrCode";
+import { useLanguage } from "@/context/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const BLOOD_GROUPS = [
   { key: "O_POS", label: "O+", donateTo: "O+, A+, B+, AB+", receiveFrom: "O+, O-" },
@@ -53,11 +55,15 @@ export default function RegisterPage() {
   const selectedBgMeta = BLOOD_GROUPS.find((b) => b.key === bloodGroup) || BLOOD_GROUPS[0];
 
   const handleCompleteRegistration = () => {
-    const id = `RK-${Math.floor(100000 + Math.random() * 900000)}`;
+    const id = `V2V-${Math.floor(100000 + Math.random() * 900000)}`;
     setGeneratedDonorId(id);
 
     try {
-      const existing = JSON.parse(localStorage.getItem("raktkhoj_registered_donors") || "[]");
+      const existing = JSON.parse(
+        localStorage.getItem("v2v_registered_donors") ||
+        localStorage.getItem("raktkhoj_registered_donors") ||
+        "[]"
+      );
       const newDonor = {
         id,
         name,
@@ -70,7 +76,7 @@ export default function RegisterPage() {
         willingPlatelets,
         registeredAt: new Date().toISOString()
       };
-      localStorage.setItem("raktkhoj_registered_donors", JSON.stringify([...existing, newDonor]));
+      localStorage.setItem("v2v_registered_donors", JSON.stringify([...existing, newDonor]));
     } catch {
       // Local storage fallback
     }
@@ -80,7 +86,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-white text-[var(--text)] flex flex-col font-sans selection:bg-[var(--accent)] selection:text-white">
-      {/* 1. Minimal Header (RaktKhoj Style) */}
+      {/* 1. Minimal Header (V2V Life Flow Network) */}
       <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-white/90 backdrop-blur-md">
         <div className="max-w-[1200px] mx-auto flex h-[68px] items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -89,10 +95,10 @@ export default function RegisterPage() {
             </span>
             <div className="flex flex-col">
               <span className="font-extrabold text-xl tracking-tight text-[var(--text)]">
-                RaktKhoj
+                V2V
               </span>
               <span className="text-[10px] text-[var(--text-dim)] font-medium -mt-1 hidden sm:block">
-                Donor Registration
+                Life Flow Network
               </span>
             </div>
           </Link>
@@ -113,6 +119,7 @@ export default function RegisterPage() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <SidecarPill compact />
             <Link
               href="/request/new"
@@ -388,7 +395,7 @@ export default function RegisterPage() {
               Registration Successful
             </h2>
             <p className="text-xs text-[var(--text-dim)] max-w-sm mx-auto mb-6">
-              You are now an active volunteer. Below is your official RaktKhoj donor identification card.
+              You are now an active volunteer. Below is your official V2V donor identification card.
             </p>
 
             {/* Clean Minimalist Digital Card */}
@@ -398,7 +405,7 @@ export default function RegisterPage() {
                   <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[var(--accent)] text-white">
                     <Droplet className="w-3.5 h-3.5 fill-white" />
                   </span>
-                  <span className="font-extrabold text-sm tracking-tight text-[var(--text)]">RaktKhoj Pass</span>
+                  <span className="font-extrabold text-sm tracking-tight text-[var(--text)]">V2V Pass</span>
                 </div>
                 <span className="text-[10px] font-bold text-[var(--good)] bg-[var(--good-wash)] px-2 py-0.5 rounded-full">
                   Verified Donor
@@ -429,7 +436,7 @@ export default function RegisterPage() {
 
                 <div className="bg-white p-1 rounded-md border border-[var(--border)]">
                   <DynamicQrCode
-                    value={`https://raktkhoj.org/donor/${generatedDonorId}`}
+                    value={`https://v2v.network/donor/${generatedDonorId}`}
                     size={42}
                   />
                 </div>
@@ -466,8 +473,8 @@ export default function RegisterPage() {
               <Droplet className="h-4 w-4 fill-white" />
             </span>
             <div>
-              <span className="font-extrabold text-white text-base tracking-tight">raktkhoj<span className="text-[#e8394c]">.</span></span>
-              <p className="text-gray-400 text-[11px]">Voluntary Donor Network &bull; 24x7 Helpline: 104 / 1075</p>
+              <span className="font-extrabold text-white text-base tracking-tight">v2v<span className="text-[#e8394c]">.</span></span>
+              <p className="text-gray-400 text-[11px]">V2V - Life Flow Network &bull; 24x7 Helpline: 104 / 1075</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-6 text-gray-300 font-semibold">

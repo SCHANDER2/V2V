@@ -671,6 +671,15 @@ export async function main() {
 
   const now = new Date();
 
+  // Configure SQLite WAL mode and busy timeout for high concurrency
+  try {
+    await prisma.$queryRawUnsafe("PRAGMA journal_mode = WAL;");
+    await prisma.$queryRawUnsafe("PRAGMA busy_timeout = 5000;");
+    await prisma.$queryRawUnsafe("PRAGMA synchronous = NORMAL;");
+  } catch (e) {
+    // Non-fatal if non-sqlite
+  }
+
   // 1. Clean existing records in strict reverse dependency order
   console.log("Purging existing records to ensure deterministic idempotency...");
   await prisma.referralLedger.deleteMany({});

@@ -8,6 +8,7 @@ import { ArrowLeft, PhoneCall, Heart } from "lucide-react";
 import HealthChecklist from "@/components/HealthChecklist";
 import V2VPass from "@/components/V2VPass";
 import SidecarPill from "@/components/SidecarPill";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { LeaseStatus } from "@/types/enums";
 
 interface RequestData {
@@ -232,7 +233,10 @@ export default function DonorRespondPage({
               V2V JIT RESPONSE
             </span>
           </div>
-          <SidecarPill compact />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher className="bg-slate-800 border-slate-700 text-white" />
+            <SidecarPill compact />
+          </div>
         </div>
       </header>
 

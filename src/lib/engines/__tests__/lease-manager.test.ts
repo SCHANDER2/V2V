@@ -7,11 +7,28 @@ const addDays = (date: Date, days: number): Date => new Date(date.getTime() + da
 
 const prisma = new PrismaClient();
 
+const TEST_SHORT_HASHES = ["hash123", "hash456"];
+const TEST_PHONES = ["+911234567890", "+919876543211", "+919876543210"];
+
+async function cleanupTestData() {
+  await prisma.donorLease.deleteMany({
+    where: {
+      OR: [
+        { request: { shortHash: { in: TEST_SHORT_HASHES } } },
+        { donor: { phoneNumber: { in: TEST_PHONES } } },
+      ],
+    },
+  }).catch(() => {});
+  await prisma.emergencyRequest.deleteMany({
+    where: { shortHash: { in: TEST_SHORT_HASHES } },
+  }).catch(() => {});
+  await prisma.donor.deleteMany({
+    where: { phoneNumber: { in: TEST_PHONES } },
+  }).catch(() => {});
+}
+
 beforeAll(async () => {
-  // reset DB (in test env) – delete all entries
-  await prisma.donorLease.deleteMany();
-  await prisma.emergencyRequest.deleteMany();
-  await prisma.donor.deleteMany();
+  await cleanupTestData();
 
   // create a donor
   await prisma.donor.create({
@@ -28,6 +45,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await cleanupTestData();
   await prisma.$disconnect();
 });
 
@@ -49,7 +67,7 @@ test("attemptLease creates active lease when slots available", async () => {
     },
   });
 
-  const donor = await prisma.donor.findFirst();
+  const donor = await prisma.donor.findFirst({ where: { phoneNumber: "+911234567890" } });
   const lease = await attemptLease(request.id, donor!.id);
   expect(lease.status).toBe(LeaseStatus.JIT_PASSED);
 });
@@ -71,7 +89,7 @@ test("evictExpiredLeases promotes standby", async () => {
     },
   });
 
-  const donor1 = await prisma.donor.findFirst();
+  const donor1 = await prisma.donor.findFirst({ where: { phoneNumber: "+911234567890" } });
   // Fill slot 1 of 2
   const lease1 = await attemptLease(request.id, donor1!.id);
   expect(lease1.status).toBe(LeaseStatus.JIT_PASSED);

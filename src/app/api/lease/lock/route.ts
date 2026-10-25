@@ -1,6 +1,8 @@
 // src/app/api/lease/lock/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma, { withDbRetry } from "@/lib/prisma";
+import { rateLimiter, rateLimitResponse } from "@/lib/rateLimit";
+import { invalidateRequestCache, invalidateDonorCache } from "@/lib/cache";
 import { attemptLease, maybeLockRequest } from "@/lib/engines/lease-manager";
 import { LeaseStatus, WaveState } from "@/types/enums";
 
@@ -11,6 +13,12 @@ interface LeaseLockBody {
 
 export async function POST(req: Request) {
   try {
+    // Rate Limiting Protection (40 locks/min per IP)
+    const rl = rateLimiter.check(req, { keyPrefix: "rl:lease_lock", limit: 40 });
+    if (!rl.allowed) {
+      return rateLimitResponse(rl);
+    }
+
     const body: LeaseLockBody = await req.json();
     const requestId = Number(body.requestId);
     const donorId = Number(body.donorId);
@@ -96,6 +104,11 @@ export async function POST(req: Request) {
 
     // If active slots reached N+1, advance waveState to LEASE_LOCKED
     await maybeLockRequest(requestId);
+
+    // Invalidate request and donor caches so concurrent readers get immediate state update
+    invalidateRequestCache(request.shortHash);
+    invalidateRequestCache(requestId);
+    invalidateDonorCache(donorId);
 
     return NextResponse.json(
       {

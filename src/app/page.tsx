@@ -27,6 +27,8 @@ import {
   X
 } from "lucide-react";
 import SidecarPill from "@/components/SidecarPill";
+import { useLanguage } from "@/context/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // Accurate live blood banks in Delhi NCR
 const FEATURED_BANKS = [
@@ -85,6 +87,7 @@ const BLOOD_GROUPS = [
 ];
 
 export default function HomePage() {
+  const { language, t } = useLanguage();
   const [selectedGroup, setSelectedGroup] = useState<string>("O_POS");
   const [searchQuery, setSearchQuery] = useState("");
   const [showQrModal, setShowQrModal] = useState(false);
@@ -117,10 +120,10 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-extrabold tracking-tight text-[#17151a]">
-                raktkhoj<span className="text-[#e8394c]">.</span>
+                V2V<span className="text-[#e8394c]">.</span>
               </span>
               <span className="text-[10px] tracking-widest uppercase font-semibold text-[#5f4e52] -mt-1">
-                National Blood Network
+                Life Flow Network
               </span>
             </div>
           </Link>
@@ -128,27 +131,28 @@ export default function HomePage() {
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#5f4e52]">
             <Link href="/directory" className="hover:text-[#e8394c] transition-colors">
-              Find Blood
+              {t("navFindBlood")}
             </Link>
             <Link href="/camps" className="hover:text-[#e8394c] transition-colors">
-              Blood Camps
+              {t("navCamps")}
             </Link>
             <button
               onClick={() => setShowEligibilityModal(true)}
               className="hover:text-[#e8394c] transition-colors"
             >
-              Can I Donate?
+              {t("navCanIDonate")}
             </button>
             <Link href="/register" className="hover:text-[#e8394c] transition-colors">
-              Donor Pass
+              {t("navDonorPass")}
             </Link>
             <Link href="/admin/simulator" className="hover:text-[#e8394c] transition-colors text-xs px-2.5 py-1 bg-black/5 rounded-full">
-              Simulator
+              {t("navSimulator")}
             </Link>
           </nav>
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <Link
               href="/request/new"
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white bg-[#e8394c] hover:bg-[#d22d40] rounded-full shadow-sm transition-all hover:scale-105"
@@ -157,13 +161,13 @@ export default function HomePage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
               </span>
-              SOS 24x7
+              {t("navSos")}
             </Link>
             <Link
               href="/register"
               className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-[#17151a] hover:text-[#e8394c] border border-black/10 hover:border-[#e8394c] rounded-full transition-all"
             >
-              Register as Donor
+              {t("navRegister")}
             </Link>
           </div>
         </div>
@@ -178,18 +182,18 @@ export default function HomePage() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#e8394c]/10 border border-[#e8394c]/20 text-xs font-bold tracking-wide uppercase text-[#e8394c]">
                 <span className="w-2 h-2 rounded-full bg-[#e8394c]"></span>
-                India&apos;s Largest Blood Donor Platform
+                {t("heroBadge")}
               </div>
 
               {/* Bold Headline */}
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#17151a] leading-[1.08]">
-                Become a donor, <br />
-                <span className="text-[#e8394c]">Save lives.</span>
+                {t("heroHeadline1")} <br />
+                <span className="text-[#e8394c]">{t("heroHeadline2")}</span>
               </h1>
 
               {/* Subhead */}
               <p className="text-lg sm:text-xl text-[#5f4e52] max-w-xl leading-relaxed">
-                Join India&apos;s voluntary blood donor collective. Find verified blood banks nearby, request emergency units in minutes, or register to save lives in your neighborhood.
+                {t("heroSubhead")}
               </p>
 
               {/* Action Buttons */}
@@ -199,7 +203,7 @@ export default function HomePage() {
                   className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-[#e8394c] hover:bg-[#d22d40] text-white font-bold text-base shadow-xl shadow-[#e8394c]/25 hover:shadow-2xl hover:scale-[1.02] transition-all"
                 >
                   <Heart className="w-5 h-5 fill-current" />
-                  Register as Donor
+                  {t("heroCtaRegister")}
                   <ArrowRight className="w-5 h-5" />
                 </Link>
 
@@ -208,7 +212,7 @@ export default function HomePage() {
                   className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-white hover:bg-[#f8f7f5] text-[#17151a] font-bold text-base border border-black/10 hover:border-black/20 shadow-sm transition-all"
                 >
                   <Search className="w-5 h-5 text-[#5f4e52]" />
-                  Find Blood Near You
+                  {t("heroCtaFind")}
                 </Link>
               </div>
 
@@ -216,15 +220,15 @@ export default function HomePage() {
               <div className="pt-4 flex flex-wrap items-center gap-6 text-xs font-semibold text-[#5f4e52]">
                 <div className="flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-[#1f9d67]" />
-                  <span>NBTC Certified Standards</span>
+                  <span>{t("trustNbtc")}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#1f9d67]" />
-                  <span>100% Free &amp; Voluntary</span>
+                  <span>{t("trustFree")}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-[#1f9d67]" />
-                  <span>24x7 Emergency Dispatch</span>
+                  <span>{t("trustEmergency")}</span>
                 </div>
               </div>
             </div>
@@ -347,7 +351,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4.5 LIVE BLOOD STOCK & CENTRES FINDER (RaktKhoj Core Live Service) */}
+      {/* 4.5 LIVE BLOOD STOCK & CENTRES FINDER (V2V Core Live Service) */}
       <section className="py-12 bg-[#faf9f6] border-b border-black/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -356,10 +360,10 @@ export default function HomePage() {
                 Live e-RaktKosh Inventory
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17151a] tracking-tight mt-1">
-                Find Blood Stocks &amp; Verified Centres
+                {t("stockTitle")}
               </h2>
               <p className="text-xs sm:text-sm text-[#5f4e52] mt-1">
-                Real-time component units and immediate contact with hospital blood transfusion departments.
+                {t("stockSubtitle")}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -367,13 +371,13 @@ export default function HomePage() {
                 onClick={() => setShowCompatibilityModal(true)}
                 className="text-xs font-bold text-[#e8394c] hover:underline flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#e8394c]/10"
               >
-                <Info className="w-3.5 h-3.5" /> Blood Compatibility Chart
+                <Info className="w-3.5 h-3.5" /> {language === "hi" ? "ब्लड अनुकूलता चार्ट" : "Blood Compatibility Chart"}
               </button>
               <Link
                 href="/directory"
                 className="text-xs font-bold text-[#17151a] hover:text-[#e8394c] flex items-center gap-1"
               >
-                Open Full Directory &rarr;
+                {language === "hi" ? "पूरी डायरेक्टरी देखें →" : "Open Full Directory →"}
               </Link>
             </div>
           </div>
@@ -385,7 +389,7 @@ export default function HomePage() {
                 <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search hospital name, area, or locality (e.g. AIIMS, Apollo, Ring Road)..."
+                  placeholder={t("searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 text-sm font-medium rounded-xl border border-black/10 focus:outline-none focus:ring-2 focus:ring-[#e8394c]"
@@ -396,14 +400,14 @@ export default function HomePage() {
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#e8394c] hover:bg-[#d22d40] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all"
               >
                 <AlertCircle className="w-4 h-4" />
-                Trigger Emergency SOS
+                {t("btnEmergencyRequest")}
               </Link>
             </div>
 
             {/* Blood group pill selectors */}
             <div>
               <span className="text-[11px] font-bold text-[#5f4e52] uppercase tracking-wider block mb-2">
-                Select Blood Group / Component:
+                {t("selectBloodGroup")}
               </span>
               <div className="flex flex-wrap gap-2">
                 {BLOOD_GROUPS.map((bg) => (
@@ -455,14 +459,14 @@ export default function HomePage() {
                     <div className="p-3 rounded-xl bg-[#fff8f8] border border-[#e8394c]/10 mb-4">
                       <div className="flex items-baseline justify-between">
                         <span className="text-xs font-semibold text-[#5f4e52]">
-                          Available {selectedGroup.replace('_', '+')}:
+                          {t("availableUnits")}:
                         </span>
                         <span className="text-lg font-extrabold text-[#e8394c]">
                           {units} Units
                         </span>
                       </div>
                       <span className="text-[10px] text-[#1f9d67] font-semibold block mt-0.5">
-                        Verified &bull; Updated 10m ago
+                        {language === "hi" ? "सत्यापित • 10 मिनट पहले अपडेट" : "Verified • Updated 10m ago"}
                       </span>
                     </div>
                   </div>
@@ -473,13 +477,13 @@ export default function HomePage() {
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-[#17151a] hover:text-[#e8394c] px-3 py-1.5 rounded-lg border border-black/10 hover:border-black/20"
                     >
                       <PhoneCall className="w-3.5 h-3.5 text-[#e8394c]" />
-                      Call
+                      {t("btnCallNow")}
                     </a>
                     <Link
                       href={`/request/new?hospital=${encodeURIComponent(bank.name)}&group=${selectedGroup}`}
                       className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#e8394c] hover:bg-[#d22d40] px-3.5 py-1.5 rounded-lg shadow-sm"
                     >
-                      Request SOS
+                      {t("btnEmergencyRequest")}
                     </Link>
                   </div>
                 </div>
@@ -709,7 +713,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. "RUNNING A BLOOD BANK OR A CAMP? LIST IT ON RAKTKHOJ" (Exact from screenshot) */}
+      {/* 7. "RUNNING A BLOOD BANK OR A CAMP? LIST IT ON V2V" */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
@@ -717,7 +721,7 @@ export default function HomePage() {
               For Organizations
             </span>
             <h2 className="text-3xl font-extrabold text-[#17151a] tracking-tight mt-1">
-              Running a blood bank or camp? List on Raktkhoj.
+              Running a blood bank or camp? List on V2V.
             </h2>
             <p className="text-sm text-[#5f4e52] mt-2">
               Connect your institution with India&apos;s digital donor coordination network to streamline voluntary donations and zero out blood wastage.
@@ -1045,7 +1049,7 @@ export default function HomePage() {
                   <Droplet className="w-5 h-5 fill-current" />
                 </div>
                 <span className="text-2xl font-bold tracking-tight text-white">
-                  raktkhoj<span className="text-[#e8394c]">.</span>
+                  v2v<span className="text-[#e8394c]">.</span>
                 </span>
               </div>
               <p className="text-xs text-gray-400 max-w-sm leading-relaxed">
@@ -1081,7 +1085,7 @@ export default function HomePage() {
               <ul className="space-y-2.5 text-xs text-gray-400">
                 <li><Link href="/register" className="hover:text-white transition-colors">Register as a Donor</Link></li>
                 <li><button onClick={() => setShowEligibilityModal(true)} className="hover:text-white transition-colors text-left">Check Eligibility</button></li>
-                <li><Link href="/register" className="hover:text-white transition-colors">Digital Raktkhoj Pass</Link></li>
+                <li><Link href="/register" className="hover:text-white transition-colors">Digital V2V Pass</Link></li>
                 <li><Link href="/camps" className="hover:text-white transition-colors">Camp RSVP</Link></li>
                 <li><a href="#eligibility" className="hover:text-white transition-colors">Donation FAQs</a></li>
               </ul>
@@ -1104,7 +1108,7 @@ export default function HomePage() {
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-4">
             <p>
-              &copy; 2026 Raktkhoj. Certified under National Blood Transfusion Council guidelines. 100% voluntary, non-commercial blood donor network.
+              &copy; 2026 V2V - Life Flow Network. Certified under National Blood Transfusion Council guidelines. 100% voluntary, non-commercial blood donor network.
             </p>
             <p className="text-gray-400">
               Emergency Dispatch Watchdog: <strong>ACTIVE (25-min SLA)</strong>
@@ -1232,7 +1236,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* BLOOD COMPATIBILITY MODAL (RaktKhoj Core Feature) */}
+      {/* BLOOD COMPATIBILITY MODAL (V2V Core Feature) */}
       {showCompatibilityModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-black/5 relative max-h-[90vh] overflow-y-auto">

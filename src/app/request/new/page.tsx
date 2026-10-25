@@ -31,6 +31,8 @@ import { mockEraktKoshAdapter } from "@/lib/adapters/mocks/mockEraktKoshAdapter"
 import { OCRVerificationResult } from "@/lib/adapters/interfaces/ocr.interface";
 import { ERaktKoshStockPreview } from "@/lib/adapters/interfaces/eraktkosh.interface";
 import SidecarPill from "@/components/SidecarPill";
+import { useLanguage } from "@/context/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // Pre-calibrated Delhi NCR premier medical centres
 const DELHI_NCR_HOSPITALS = [
@@ -73,6 +75,7 @@ const DELHI_NCR_HOSPITALS = [
 
 export default function EmergencyRequestNewPage() {
   const router = useRouter();
+  const { language, t } = useLanguage();
 
   // Core Form State
   const [patientName, setPatientName] = useState("");
@@ -354,6 +357,7 @@ export default function EmergencyRequestNewPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher className="bg-white/10 border-white/20 text-white" />
             <a
               href="tel:104"
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 text-xs font-bold text-white transition border border-white/20"
@@ -369,6 +373,23 @@ export default function EmergencyRequestNewPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+        {/* Reassurance Banner for Indian Families */}
+        <section className="rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-4 shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold">
+              ✓
+            </span>
+            <div className="space-y-0.5">
+              <h3 className="text-sm font-extrabold text-emerald-950">
+                {t("reassuranceBanner")}
+              </h3>
+              <p className="text-xs text-emerald-800">
+                {t("reassuranceHighlight")} • 24x7 National Helpline: <strong className="underline">104 / 1075 / 1910</strong>
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Anti-Tout Safety Advisory Banner */}
         <section
           aria-label="Anti-Tout Safety Warning"

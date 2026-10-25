@@ -1,6 +1,7 @@
 // src/app/api/telephony/bridge/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma, { withDbRetry } from "@/lib/prisma";
+import { rateLimiter, rateLimitResponse } from "@/lib/rateLimit";
 import { adapters } from "@/lib/adapters";
 import { LeaseStatus, WaveState } from "@/types/enums";
 
@@ -13,6 +14,12 @@ interface TelephonyBridgeBody {
 
 export async function POST(req: Request) {
   try {
+    // Rate Limiting Protection (30 call bridges/min per IP)
+    const rl = rateLimiter.check(req, { keyPrefix: "rl:telephony_bridge", limit: 30 });
+    if (!rl.allowed) {
+      return rateLimitResponse(rl);
+    }
+
     const body: TelephonyBridgeBody = await req.json();
     const requestId = Number(body.requestId);
     const donorId = Number(body.donorId);
