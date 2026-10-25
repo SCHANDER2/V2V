@@ -13,29 +13,32 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/client": "5.x",
+    "axios": "1.x",
+    "docx": "^9.14.0",
+    "geolib": "4.x",
+    "ioredis": "5.x",
+    "lucide-react": "0.x",
+    "mammoth": "^1.13.0",
     "next": "14.x",
+    "next-pwa": "^5.6.0",
+    "pdf-lib": "^1.17.1",
+    "prisma": "5.x",
     "react": "18.x",
     "react-dom": "18.x",
-    "@prisma/client": "5.x",
-    "prisma": "5.x",
-    "ioredis": "5.x",
-    "geolib": "4.x",
-    "zod": "3.x",
-    "axios": "1.x",
-    "tailwindcss": "3.x",
-    "lucide-react": "0.x",
     "shadcn-ui": "latest",
-    "next-pwa": "^5.6.0",
-    "tsx": "4.x"
+    "tailwindcss": "3.x",
+    "tsx": "4.x",
+    "zod": "3.x"
   },
   "devDependencies": {
-    "rimraf": "^2.7.1",
-    "typescript": "5.x",
-    "jest": "29.x",
-    "ts-jest": "29.x",
-    "@types/jest": "29.x",
-    "@testing-library/react": "14.x",
     "@testing-library/jest-dom": "6.x",
-    "@types/node": "20.x"
+    "@testing-library/react": "14.x",
+    "@types/jest": "29.x",
+    "@types/node": "20.x",
+    "jest": "29.x",
+    "rimraf": "^2.7.1",
+    "ts-jest": "29.x",
+    "typescript": "5.x"
   }
 }
